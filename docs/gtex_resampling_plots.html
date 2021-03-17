@@ -1,0 +1,1047 @@
+<!DOCTYPE html>
+
+<html>
+
+<head>
+
+<meta charset="utf-8" />
+<meta name="generator" content="pandoc" />
+<meta http-equiv="X-UA-Compatible" content="IE=EDGE" />
+
+
+
+
+<title>GTEx Resampling Results</title>
+
+<script src="site_libs/header-attrs-2.5/header-attrs.js"></script>
+<script src="site_libs/jquery-1.11.3/jquery.min.js"></script>
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<link href="site_libs/bootstrap-3.3.5/css/flatly.min.css" rel="stylesheet" />
+<script src="site_libs/bootstrap-3.3.5/js/bootstrap.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/html5shiv.min.js"></script>
+<script src="site_libs/bootstrap-3.3.5/shim/respond.min.js"></script>
+<script src="site_libs/jqueryui-1.11.4/jquery-ui.min.js"></script>
+<link href="site_libs/tocify-1.9.1/jquery.tocify.css" rel="stylesheet" />
+<script src="site_libs/tocify-1.9.1/jquery.tocify.js"></script>
+<script src="site_libs/navigation-1.1/tabsets.js"></script>
+<link href="site_libs/highlightjs-9.12.0/default.css" rel="stylesheet" />
+<script src="site_libs/highlightjs-9.12.0/highlight.js"></script>
+<link href="site_libs/anchor-sections-1.0/anchor-sections.css" rel="stylesheet" />
+<script src="site_libs/anchor-sections-1.0/anchor-sections.js"></script>
+
+<style type="text/css">
+  code{white-space: pre-wrap;}
+  span.smallcaps{font-variant: small-caps;}
+  span.underline{text-decoration: underline;}
+  div.column{display: inline-block; vertical-align: top; width: 50%;}
+  div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+  ul.task-list{list-style: none;}
+    </style>
+
+<style type="text/css">code{white-space: pre;}</style>
+<style type="text/css">
+  pre:not([class]) {
+    background-color: white;
+  }
+</style>
+<script type="text/javascript">
+if (window.hljs) {
+  hljs.configure({languages: []});
+  hljs.initHighlightingOnLoad();
+  if (document.readyState && document.readyState === "complete") {
+    window.setTimeout(function() { hljs.initHighlighting(); }, 0);
+  }
+}
+</script>
+
+
+
+<style type="text/css">
+h1 {
+  font-size: 34px;
+}
+h1.title {
+  font-size: 38px;
+}
+h2 {
+  font-size: 30px;
+}
+h3 {
+  font-size: 24px;
+}
+h4 {
+  font-size: 18px;
+}
+h5 {
+  font-size: 16px;
+}
+h6 {
+  font-size: 12px;
+}
+.table th:not([align]) {
+  text-align: left;
+}
+</style>
+
+
+
+
+<style type = "text/css">
+.main-container {
+  max-width: 940px;
+  margin-left: auto;
+  margin-right: auto;
+}
+code {
+  color: inherit;
+  background-color: rgba(0, 0, 0, 0.04);
+}
+img {
+  max-width:100%;
+}
+.tabbed-pane {
+  padding-top: 12px;
+}
+.html-widget {
+  margin-bottom: 20px;
+}
+button.code-folding-btn:focus {
+  outline: none;
+}
+summary {
+  display: list-item;
+}
+</style>
+
+
+<style type="text/css">
+/* padding for bootstrap navbar */
+body {
+  padding-top: 60px;
+  padding-bottom: 40px;
+}
+/* offset scroll position for anchor links (for fixed navbar)  */
+.section h1 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h2 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h3 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h4 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h5 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.section h6 {
+  padding-top: 65px;
+  margin-top: -65px;
+}
+.dropdown-submenu {
+  position: relative;
+}
+.dropdown-submenu>.dropdown-menu {
+  top: 0;
+  left: 100%;
+  margin-top: -6px;
+  margin-left: -1px;
+  border-radius: 0 6px 6px 6px;
+}
+.dropdown-submenu:hover>.dropdown-menu {
+  display: block;
+}
+.dropdown-submenu>a:after {
+  display: block;
+  content: " ";
+  float: right;
+  width: 0;
+  height: 0;
+  border-color: transparent;
+  border-style: solid;
+  border-width: 5px 0 5px 5px;
+  border-left-color: #cccccc;
+  margin-top: 5px;
+  margin-right: -10px;
+}
+.dropdown-submenu:hover>a:after {
+  border-left-color: #ffffff;
+}
+.dropdown-submenu.pull-left {
+  float: none;
+}
+.dropdown-submenu.pull-left>.dropdown-menu {
+  left: -100%;
+  margin-left: 10px;
+  border-radius: 6px 0 6px 6px;
+}
+</style>
+
+<script>
+// manage active state of menu based on current page
+$(document).ready(function () {
+  // active menu anchor
+  href = window.location.pathname
+  href = href.substr(href.lastIndexOf('/') + 1)
+  if (href === "")
+    href = "index.html";
+  var menuAnchor = $('a[href="' + href + '"]');
+
+  // mark it active
+  menuAnchor.parent().addClass('active');
+
+  // if it's got a parent navbar menu mark it active as well
+  menuAnchor.closest('li.dropdown').addClass('active');
+});
+</script>
+
+<!-- tabsets -->
+
+<style type="text/css">
+.tabset-dropdown > .nav-tabs {
+  display: inline-table;
+  max-height: 500px;
+  min-height: 44px;
+  overflow-y: auto;
+  background: white;
+  border: 1px solid #ddd;
+  border-radius: 4px;
+}
+
+.tabset-dropdown > .nav-tabs > li.active:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li.active:before {
+  content: "&#xe258;";
+  border: none;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open:before {
+  content: "";
+  font-family: 'Glyphicons Halflings';
+  display: inline-block;
+  padding: 10px;
+  border-right: 1px solid #ddd;
+}
+
+.tabset-dropdown > .nav-tabs > li.active {
+  display: block;
+}
+
+.tabset-dropdown > .nav-tabs > li > a,
+.tabset-dropdown > .nav-tabs > li > a:focus,
+.tabset-dropdown > .nav-tabs > li > a:hover {
+  border: none;
+  display: inline-block;
+  border-radius: 4px;
+  background-color: transparent;
+}
+
+.tabset-dropdown > .nav-tabs.nav-tabs-open > li {
+  display: block;
+  float: none;
+}
+
+.tabset-dropdown > .nav-tabs > li {
+  display: none;
+}
+</style>
+
+<!-- code folding -->
+
+
+
+<style type="text/css">
+
+#TOC {
+  margin: 25px 0px 20px 0px;
+}
+@media (max-width: 768px) {
+#TOC {
+  position: relative;
+  width: 100%;
+}
+}
+
+@media print {
+.toc-content {
+  /* see https://github.com/w3c/csswg-drafts/issues/4434 */
+  float: right;
+}
+}
+
+.toc-content {
+  padding-left: 30px;
+  padding-right: 40px;
+}
+
+div.main-container {
+  max-width: 1200px;
+}
+
+div.tocify {
+  width: 20%;
+  max-width: 260px;
+  max-height: 85%;
+}
+
+@media (min-width: 768px) and (max-width: 991px) {
+  div.tocify {
+    width: 25%;
+  }
+}
+
+@media (max-width: 767px) {
+  div.tocify {
+    width: 100%;
+    max-width: none;
+  }
+}
+
+.tocify ul, .tocify li {
+  line-height: 20px;
+}
+
+.tocify-subheader .tocify-item {
+  font-size: 0.90em;
+}
+
+.tocify .list-group-item {
+  border-radius: 0px;
+}
+
+
+</style>
+
+
+
+</head>
+
+<body>
+
+
+<div class="container-fluid main-container">
+
+
+<!-- setup 3col/9col grid for toc_float and main content  -->
+<div class="row-fluid">
+<div class="col-xs-12 col-sm-4 col-md-3">
+<div id="TOC" class="tocify">
+</div>
+</div>
+
+<div class="toc-content col-xs-12 col-sm-8 col-md-9">
+
+
+
+
+<div class="navbar navbar-default  navbar-fixed-top" role="navigation">
+  <div class="container">
+    <div class="navbar-header">
+      <button type="button" class="navbar-toggle collapsed" data-toggle="collapse" data-target="#navbar">
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+        <span class="icon-bar"></span>
+      </button>
+      <a class="navbar-brand" href="index.html">Guidelines on Building Coexpression Networks from RNA-seq Data</a>
+    </div>
+    <div id="navbar" class="navbar-collapse collapse">
+      <ul class="nav navbar-nav">
+        
+      </ul>
+      <ul class="nav navbar-nav navbar-right">
+        <li>
+  <a href="gtex_plots.html">GTEx Results</a>
+</li>
+<li>
+  <a href="sra_plots.html">SRA Results</a>
+</li>
+<li>
+  <a href="gtex_resampling_plots.html">GTEx Resampling</a>
+</li>
+      </ul>
+    </div><!--/.nav-collapse -->
+  </div><!--/.container -->
+</div><!--/.navbar -->
+
+<div class="fluid-row" id="header">
+
+
+
+<h1 class="title toc-ignore">GTEx Resampling Results</h1>
+
+</div>
+
+
+<p>To investigate the effect of sample size, we randomly selected a number of samples (5, 6, 7, 9, 11, 13, 16, 25, 40) from each GTEx tissue that had at least 70 samples to choose from. Ten trials were done for each chosen sample size. Below, we have plotted the performance of the networks created with a given number of samples by each workflow. In addition, we examined effects of similarity of gene expression across samples, standard deviation of counts sums across samples, and tissue type. Although only Log<sub>2</sub>(auPRC/prior) results are shown here, other measures (Precision at 20% recall and Area under the ROC curve) yield very similar results and figures.</p>
+<div id="overall-method-performance" class="section level1 tabset tabset-fade tabset-pills">
+<h1 class="tabset tabset-fade tabset-pills">Overall Method Performance</h1>
+<div id="samples" class="section level2">
+<h2>5 samples</h2>
+<pre><code>## Warning: Removed 34 rows containing missing values (geom_fit_text).</code></pre>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-4-1.png" alt="**Overall performance of workflows.** The plots show the aggregate accuracy of all resampled GTEx coexpression networks of a given sample size resulting from each individual workflow evaluated using the (**left**) tissue-naive and (**right**) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(auPRC/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(auPRC/prior) for the tissue-naive data." width="100%" />
+<p class="caption">
+<strong>Overall performance of workflows.</strong> The plots show the aggregate accuracy of all resampled GTEx coexpression networks of a given sample size resulting from each individual workflow evaluated using the (<strong>left</strong>) tissue-naive and (<strong>right</strong>) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(auPRC/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(auPRC/prior) for the tissue-naive data.
+</p>
+</div>
+</div>
+<div id="samples-1" class="section level2">
+<h2>6 samples</h2>
+<pre><code>## Warning: Removed 34 rows containing missing values (geom_fit_text).</code></pre>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-6-1.png" alt="**Overall performance of workflows.** The plots show the aggregate accuracy of all resampled GTEx coexpression networks of a given sample size resulting from each individual workflow evaluated using the (**left**) tissue-naive and (**right**) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(auPRC/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(auPRC/prior) for the tissue-naive data." width="100%" />
+<p class="caption">
+<strong>Overall performance of workflows.</strong> The plots show the aggregate accuracy of all resampled GTEx coexpression networks of a given sample size resulting from each individual workflow evaluated using the (<strong>left</strong>) tissue-naive and (<strong>right</strong>) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(auPRC/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(auPRC/prior) for the tissue-naive data.
+</p>
+</div>
+</div>
+<div id="samples-2" class="section level2">
+<h2>7 samples</h2>
+<pre><code>## Warning: Removed 34 rows containing missing values (geom_fit_text).</code></pre>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-8-1.png" alt="**Overall performance of workflows.** The plots show the aggregate accuracy of all resampled GTEx coexpression networks of a given sample size resulting from each individual workflow evaluated using the (**left**) tissue-naive and (**right**) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(auPRC/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(auPRC/prior) for the tissue-naive data." width="100%" />
+<p class="caption">
+<strong>Overall performance of workflows.</strong> The plots show the aggregate accuracy of all resampled GTEx coexpression networks of a given sample size resulting from each individual workflow evaluated using the (<strong>left</strong>) tissue-naive and (<strong>right</strong>) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(auPRC/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(auPRC/prior) for the tissue-naive data.
+</p>
+</div>
+</div>
+<div id="samples-3" class="section level2">
+<h2>9 samples</h2>
+<pre><code>## Warning: Removed 34 rows containing missing values (geom_fit_text).</code></pre>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-10-1.png" alt="**Overall performance of workflows.** The plots show the aggregate accuracy of all resampled GTEx coexpression networks of a given sample size resulting from each individual workflow evaluated using the (**left**) tissue-naive and (**right**) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(auPRC/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(auPRC/prior) for the tissue-naive data." width="100%" />
+<p class="caption">
+<strong>Overall performance of workflows.</strong> The plots show the aggregate accuracy of all resampled GTEx coexpression networks of a given sample size resulting from each individual workflow evaluated using the (<strong>left</strong>) tissue-naive and (<strong>right</strong>) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(auPRC/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(auPRC/prior) for the tissue-naive data.
+</p>
+</div>
+</div>
+<div id="samples-4" class="section level2">
+<h2>11 samples</h2>
+<pre><code>## Warning: Removed 34 rows containing missing values (geom_fit_text).</code></pre>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-12-1.png" alt="**Overall performance of workflows.** The plots show the aggregate accuracy of all resampled GTEx coexpression networks of a given sample size resulting from each individual workflow evaluated using the (**left**) tissue-naive and (**right**) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(auPRC/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(auPRC/prior) for the tissue-naive data." width="100%" />
+<p class="caption">
+<strong>Overall performance of workflows.</strong> The plots show the aggregate accuracy of all resampled GTEx coexpression networks of a given sample size resulting from each individual workflow evaluated using the (<strong>left</strong>) tissue-naive and (<strong>right</strong>) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(auPRC/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(auPRC/prior) for the tissue-naive data.
+</p>
+</div>
+</div>
+<div id="samples-5" class="section level2">
+<h2>13 samples</h2>
+<pre><code>## Warning: Removed 34 rows containing missing values (geom_fit_text).</code></pre>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-14-1.png" alt="**Overall performance of workflows.** The plots show the aggregate accuracy of all resampled GTEx coexpression networks of a given sample size resulting from each individual workflow evaluated using the (**left**) tissue-naive and (**right**) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(auPRC/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(auPRC/prior) for the tissue-naive data." width="100%" />
+<p class="caption">
+<strong>Overall performance of workflows.</strong> The plots show the aggregate accuracy of all resampled GTEx coexpression networks of a given sample size resulting from each individual workflow evaluated using the (<strong>left</strong>) tissue-naive and (<strong>right</strong>) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(auPRC/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(auPRC/prior) for the tissue-naive data.
+</p>
+</div>
+</div>
+<div id="samples-6" class="section level2">
+<h2>16 samples</h2>
+<pre><code>## Warning: Removed 34 rows containing missing values (geom_fit_text).</code></pre>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-16-1.png" alt="**Overall performance of workflows.** The plots show the aggregate accuracy of all resampled GTEx coexpression networks of a given sample size resulting from each individual workflow evaluated using the (**left**) tissue-naive and (**right**) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(auPRC/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(auPRC/prior) for the tissue-naive data." width="100%" />
+<p class="caption">
+<strong>Overall performance of workflows.</strong> The plots show the aggregate accuracy of all resampled GTEx coexpression networks of a given sample size resulting from each individual workflow evaluated using the (<strong>left</strong>) tissue-naive and (<strong>right</strong>) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(auPRC/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(auPRC/prior) for the tissue-naive data.
+</p>
+</div>
+</div>
+<div id="samples-7" class="section level2">
+<h2>25 samples</h2>
+<pre><code>## Warning: Removed 34 rows containing missing values (geom_fit_text).</code></pre>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-18-1.png" alt="**Overall performance of workflows.** The plots show the aggregate accuracy of all resampled GTEx coexpression networks of a given sample size resulting from each individual workflow evaluated using the (**left**) tissue-naive and (**right**) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(auPRC/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(auPRC/prior) for the tissue-naive data." width="100%" />
+<p class="caption">
+<strong>Overall performance of workflows.</strong> The plots show the aggregate accuracy of all resampled GTEx coexpression networks of a given sample size resulting from each individual workflow evaluated using the (<strong>left</strong>) tissue-naive and (<strong>right</strong>) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(auPRC/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(auPRC/prior) for the tissue-naive data.
+</p>
+</div>
+</div>
+<div id="samples-8" class="section level2">
+<h2>40 samples</h2>
+<pre><code>## Warning: Removed 34 rows containing missing values (geom_fit_text).</code></pre>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-20-1.png" alt="**Overall performance of workflows.** The plots show the aggregate accuracy of all resampled GTEx coexpression networks of a given sample size resulting from each individual workflow evaluated using the (**left**) tissue-naive and (**right**) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(auPRC/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(auPRC/prior) for the tissue-naive data." width="100%" />
+<p class="caption">
+<strong>Overall performance of workflows.</strong> The plots show the aggregate accuracy of all resampled GTEx coexpression networks of a given sample size resulting from each individual workflow evaluated using the (<strong>left</strong>) tissue-naive and (<strong>right</strong>) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(auPRC/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(auPRC/prior) for the tissue-naive data.
+</p>
+</div>
+</div>
+</div>
+<div id="proportion-of-times-each-method-outperforms-another" class="section level1 tabset tabset-fade tabset-pills">
+<h1 class="tabset tabset-fade tabset-pills">Proportion of Times Each Method Outperforms Another</h1>
+<div id="samples-9" class="section level2 tabset tabset-fade tabset-pills">
+<h2 class="tabset tabset-fade tabset-pills">5 samples</h2>
+<div id="tissue-naive-standard" class="section level3">
+<h3>Tissue-naive Standard</h3>
+<p><img src="plots/heatmap_legend.png" width="49%" /></p>
+<div class="figure">
+<img src="plots/gtex_resampling_5_sample_naive_heatmap_fig.png" alt="**Dataset-level pairwise comparison of workflow performance.** (**left**) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-naive gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (**middle**) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (**right**) The barplot shows the number of times each workflow was significantly greater than another workflow." width="100%" />
+<p class="caption">
+<strong>Dataset-level pairwise comparison of workflow performance.</strong> (<strong>left</strong>) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-naive gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (<strong>middle</strong>) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (<strong>right</strong>) The barplot shows the number of times each workflow was significantly greater than another workflow.
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard" class="section level3">
+<h3>Tissue-aware Standard</h3>
+<p><img src="plots/heatmap_legend.png" width="49%" /></p>
+<div class="figure">
+<img src="plots/gtex_resampling_5_sample_knowledge_heatmap_fig.png" alt="**Dataset-level pairwise comparison of workflow performance.** (**left**) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-aware gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (**middle**) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (**right**) The barplot shows the number of times each workflow was significantly greater than another workflow." width="100%" />
+<p class="caption">
+<strong>Dataset-level pairwise comparison of workflow performance.</strong> (<strong>left</strong>) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-aware gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (<strong>middle</strong>) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (<strong>right</strong>) The barplot shows the number of times each workflow was significantly greater than another workflow.
+</p>
+</div>
+</div>
+</div>
+<div id="samples-10" class="section level2 tabset tabset-fade tabset-pills">
+<h2 class="tabset tabset-fade tabset-pills">6 samples</h2>
+<div id="tissue-naive-standard-1" class="section level3">
+<h3>Tissue-naive Standard</h3>
+<p><img src="plots/heatmap_legend.png" width="49%" /></p>
+<div class="figure">
+<img src="plots/gtex_resampling_6_sample_naive_heatmap_fig.png" alt="**Dataset-level pairwise comparison of workflow performance.** (**left**) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-naive gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (**middle**) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (**right**) The barplot shows the number of times each workflow was significantly greater than another workflow." width="100%" />
+<p class="caption">
+<strong>Dataset-level pairwise comparison of workflow performance.</strong> (<strong>left</strong>) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-naive gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (<strong>middle</strong>) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (<strong>right</strong>) The barplot shows the number of times each workflow was significantly greater than another workflow.
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-1" class="section level3">
+<h3>Tissue-aware Standard</h3>
+<p><img src="plots/heatmap_legend.png" width="49%" /></p>
+<div class="figure">
+<img src="plots/gtex_resampling_6_sample_knowledge_heatmap_fig.png" alt="**Dataset-level pairwise comparison of workflow performance.** (**left**) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-aware gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (**middle**) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (**right**) The barplot shows the number of times each workflow was significantly greater than another workflow." width="100%" />
+<p class="caption">
+<strong>Dataset-level pairwise comparison of workflow performance.</strong> (<strong>left</strong>) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-aware gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (<strong>middle</strong>) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (<strong>right</strong>) The barplot shows the number of times each workflow was significantly greater than another workflow.
+</p>
+</div>
+</div>
+</div>
+<div id="samples-11" class="section level2 tabset tabset-fade tabset-pills">
+<h2 class="tabset tabset-fade tabset-pills">7 samples</h2>
+<div id="tissue-naive-standard-2" class="section level3">
+<h3>Tissue-naive Standard</h3>
+<p><img src="plots/heatmap_legend.png" width="49%" /></p>
+<div class="figure">
+<img src="plots/gtex_resampling_7_sample_naive_heatmap_fig.png" alt="**Dataset-level pairwise comparison of workflow performance.** (**left**) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-naive gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (**middle**) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (**right**) The barplot shows the number of times each workflow was significantly greater than another workflow." width="100%" />
+<p class="caption">
+<strong>Dataset-level pairwise comparison of workflow performance.</strong> (<strong>left</strong>) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-naive gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (<strong>middle</strong>) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (<strong>right</strong>) The barplot shows the number of times each workflow was significantly greater than another workflow.
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-2" class="section level3">
+<h3>Tissue-aware Standard</h3>
+<p><img src="plots/heatmap_legend.png" width="49%" /></p>
+<div class="figure">
+<img src="plots/gtex_resampling_7_sample_knowledge_heatmap_fig.png" alt="**Dataset-level pairwise comparison of workflow performance.** (**left**) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-aware gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (**middle**) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (**right**) The barplot shows the number of times each workflow was significantly greater than another workflow." width="100%" />
+<p class="caption">
+<strong>Dataset-level pairwise comparison of workflow performance.</strong> (<strong>left</strong>) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-aware gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (<strong>middle</strong>) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (<strong>right</strong>) The barplot shows the number of times each workflow was significantly greater than another workflow.
+</p>
+</div>
+</div>
+</div>
+<div id="samples-12" class="section level2 tabset tabset-fade tabset-pills">
+<h2 class="tabset tabset-fade tabset-pills">9 samples</h2>
+<div id="tissue-naive-standard-3" class="section level3">
+<h3>Tissue-naive Standard</h3>
+<p><img src="plots/heatmap_legend.png" width="49%" /></p>
+<div class="figure">
+<img src="plots/gtex_resampling_9_sample_naive_heatmap_fig.png" alt="**Dataset-level pairwise comparison of workflow performance.** (**left**) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-naive gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (**middle**) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (**right**) The barplot shows the number of times each workflow was significantly greater than another workflow." width="100%" />
+<p class="caption">
+<strong>Dataset-level pairwise comparison of workflow performance.</strong> (<strong>left</strong>) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-naive gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (<strong>middle</strong>) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (<strong>right</strong>) The barplot shows the number of times each workflow was significantly greater than another workflow.
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-3" class="section level3">
+<h3>Tissue-aware Standard</h3>
+<p><img src="plots/heatmap_legend.png" width="49%" /></p>
+<div class="figure">
+<img src="plots/gtex_resampling_9_sample_knowledge_heatmap_fig.png" alt="**Dataset-level pairwise comparison of workflow performance.** (**left**) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-aware gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (**middle**) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (**right**) The barplot shows the number of times each workflow was significantly greater than another workflow." width="100%" />
+<p class="caption">
+<strong>Dataset-level pairwise comparison of workflow performance.</strong> (<strong>left</strong>) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-aware gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (<strong>middle</strong>) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (<strong>right</strong>) The barplot shows the number of times each workflow was significantly greater than another workflow.
+</p>
+</div>
+</div>
+</div>
+<div id="samples-13" class="section level2 tabset tabset-fade tabset-pills">
+<h2 class="tabset tabset-fade tabset-pills">11 samples</h2>
+<div id="tissue-naive-standard-4" class="section level3">
+<h3>Tissue-naive Standard</h3>
+<p><img src="plots/heatmap_legend.png" width="49%" /></p>
+<div class="figure">
+<img src="plots/gtex_resampling_11_sample_naive_heatmap_fig.png" alt="**Dataset-level pairwise comparison of workflow performance.** (**left**) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-naive gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (**middle**) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (**right**) The barplot shows the number of times each workflow was significantly greater than another workflow." width="100%" />
+<p class="caption">
+<strong>Dataset-level pairwise comparison of workflow performance.</strong> (<strong>left</strong>) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-naive gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (<strong>middle</strong>) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (<strong>right</strong>) The barplot shows the number of times each workflow was significantly greater than another workflow.
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-4" class="section level3">
+<h3>Tissue-aware Standard</h3>
+<p><img src="plots/heatmap_legend.png" width="49%" /></p>
+<div class="figure">
+<img src="plots/gtex_resampling_11_sample_knowledge_heatmap_fig.png" alt="**Dataset-level pairwise comparison of workflow performance.** (**left**) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-aware gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (**middle**) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (**right**) The barplot shows the number of times each workflow was significantly greater than another workflow." width="100%" />
+<p class="caption">
+<strong>Dataset-level pairwise comparison of workflow performance.</strong> (<strong>left</strong>) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-aware gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (<strong>middle</strong>) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (<strong>right</strong>) The barplot shows the number of times each workflow was significantly greater than another workflow.
+</p>
+</div>
+</div>
+</div>
+<div id="samples-14" class="section level2 tabset tabset-fade tabset-pills">
+<h2 class="tabset tabset-fade tabset-pills">13 samples</h2>
+<div id="tissue-naive-standard-5" class="section level3">
+<h3>Tissue-naive Standard</h3>
+<p><img src="plots/heatmap_legend.png" width="49%" /></p>
+<div class="figure">
+<img src="plots/gtex_resampling_13_sample_naive_heatmap_fig.png" alt="**Dataset-level pairwise comparison of workflow performance.** (**left**) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-naive gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (**middle**) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (**right**) The barplot shows the number of times each workflow was significantly greater than another workflow." width="100%" />
+<p class="caption">
+<strong>Dataset-level pairwise comparison of workflow performance.</strong> (<strong>left</strong>) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-naive gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (<strong>middle</strong>) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (<strong>right</strong>) The barplot shows the number of times each workflow was significantly greater than another workflow.
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-5" class="section level3">
+<h3>Tissue-aware Standard</h3>
+<p><img src="plots/heatmap_legend.png" width="49%" /></p>
+<div class="figure">
+<img src="plots/gtex_resampling_13_sample_knowledge_heatmap_fig.png" alt="**Dataset-level pairwise comparison of workflow performance.** (**left**) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-aware gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (**middle**) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (**right**) The barplot shows the number of times each workflow was significantly greater than another workflow." width="100%" />
+<p class="caption">
+<strong>Dataset-level pairwise comparison of workflow performance.</strong> (<strong>left</strong>) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-aware gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (<strong>middle</strong>) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (<strong>right</strong>) The barplot shows the number of times each workflow was significantly greater than another workflow.
+</p>
+</div>
+</div>
+</div>
+<div id="samples-15" class="section level2 tabset tabset-fade tabset-pills">
+<h2 class="tabset tabset-fade tabset-pills">16 samples</h2>
+<div id="tissue-naive-standard-6" class="section level3">
+<h3>Tissue-naive Standard</h3>
+<p><img src="plots/heatmap_legend.png" width="49%" /></p>
+<div class="figure">
+<img src="plots/gtex_resampling_16_sample_naive_heatmap_fig.png" alt="**Dataset-level pairwise comparison of workflow performance.** (**left**) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-naive gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (**middle**) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (**right**) The barplot shows the number of times each workflow was significantly greater than another workflow." width="100%" />
+<p class="caption">
+<strong>Dataset-level pairwise comparison of workflow performance.</strong> (<strong>left</strong>) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-naive gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (<strong>middle</strong>) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (<strong>right</strong>) The barplot shows the number of times each workflow was significantly greater than another workflow.
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-6" class="section level3">
+<h3>Tissue-aware Standard</h3>
+<p><img src="plots/heatmap_legend.png" width="49%" /></p>
+<div class="figure">
+<img src="plots/gtex_resampling_16_sample_knowledge_heatmap_fig.png" alt="**Dataset-level pairwise comparison of workflow performance.** (**left**) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-aware gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (**middle**) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (**right**) The barplot shows the number of times each workflow was significantly greater than another workflow." width="100%" />
+<p class="caption">
+<strong>Dataset-level pairwise comparison of workflow performance.</strong> (<strong>left</strong>) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-aware gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (<strong>middle</strong>) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (<strong>right</strong>) The barplot shows the number of times each workflow was significantly greater than another workflow.
+</p>
+</div>
+</div>
+</div>
+<div id="samples-16" class="section level2 tabset tabset-fade tabset-pills">
+<h2 class="tabset tabset-fade tabset-pills">25 samples</h2>
+<div id="tissue-naive-standard-7" class="section level3">
+<h3>Tissue-naive Standard</h3>
+<p><img src="plots/heatmap_legend.png" width="49%" /></p>
+<div class="figure">
+<img src="plots/gtex_resampling_25_sample_naive_heatmap_fig.png" alt="**Dataset-level pairwise comparison of workflow performance.** (**left**) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-naive gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (**middle**) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (**right**) The barplot shows the number of times each workflow was significantly greater than another workflow." width="100%" />
+<p class="caption">
+<strong>Dataset-level pairwise comparison of workflow performance.</strong> (<strong>left</strong>) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-naive gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (<strong>middle</strong>) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (<strong>right</strong>) The barplot shows the number of times each workflow was significantly greater than another workflow.
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-7" class="section level3">
+<h3>Tissue-aware Standard</h3>
+<p><img src="plots/heatmap_legend.png" width="49%" /></p>
+<div class="figure">
+<img src="plots/gtex_resampling_25_sample_knowledge_heatmap_fig.png" alt="**Dataset-level pairwise comparison of workflow performance.** (**left**) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-aware gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (**middle**) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (**right**) The barplot shows the number of times each workflow was significantly greater than another workflow." width="100%" />
+<p class="caption">
+<strong>Dataset-level pairwise comparison of workflow performance.</strong> (<strong>left</strong>) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-aware gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (<strong>middle</strong>) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (<strong>right</strong>) The barplot shows the number of times each workflow was significantly greater than another workflow.
+</p>
+</div>
+</div>
+</div>
+<div id="samples-17" class="section level2 tabset tabset-fade tabset-pills">
+<h2 class="tabset tabset-fade tabset-pills">40 samples</h2>
+<div id="tissue-naive-standard-8" class="section level3">
+<h3>Tissue-naive Standard</h3>
+<p><img src="plots/heatmap_legend.png" width="49%" /></p>
+<div class="figure">
+<img src="plots/gtex_resampling_40_sample_naive_heatmap_fig.png" alt="**Dataset-level pairwise comparison of workflow performance.** (**left**) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-naive gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (**middle**) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (**right**) The barplot shows the number of times each workflow was significantly greater than another workflow." width="100%" />
+<p class="caption">
+<strong>Dataset-level pairwise comparison of workflow performance.</strong> (<strong>left</strong>) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-naive gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (<strong>middle</strong>) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (<strong>right</strong>) The barplot shows the number of times each workflow was significantly greater than another workflow.
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-8" class="section level3">
+<h3>Tissue-aware Standard</h3>
+<p><img src="plots/heatmap_legend.png" width="49%" /></p>
+<div class="figure">
+<img src="plots/gtex_resampling_40_sample_knowledge_heatmap_fig.png" alt="**Dataset-level pairwise comparison of workflow performance.** (**left**) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-aware gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (**middle**) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (**right**) The barplot shows the number of times each workflow was significantly greater than another workflow." width="100%" />
+<p class="caption">
+<strong>Dataset-level pairwise comparison of workflow performance.</strong> (<strong>left</strong>) The heatmap shows the relative performance of a pair of workflows, corresponding to a row and a column, directly compared to each other for the resampled GTEx datasets of a given sample size based on the tissue-aware gold standard. The color in each cell (row, column) represents the proportion of datasets for which the workflow along the row has a higher log2(auPRC/prior) than the workflow along the column. Comparisons that are statistically significant (corrected p &lt; 0.01) based on a paired Wilcoxon test are marked with an asterisk. (<strong>middle</strong>) The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. (<strong>right</strong>) The barplot shows the number of times each workflow was significantly greater than another workflow.
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="method-part-comparison" class="section level1 tabset tabset-fade tabset-pills">
+<h1 class="tabset tabset-fade tabset-pills">Method Part Comparison</h1>
+<div id="samples-18" class="section level2 tabset tabset-fade tabset-pills">
+<h2 class="tabset tabset-fade tabset-pills">5 samples</h2>
+<div id="tissue-naive-standard-9" class="section level3">
+<h3>Tissue-naive Standard</h3>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-60-1.png" alt="**Impact of individual methods on performance of workflows.** Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI)." width="100%" />
+<p class="caption">
+<strong>Impact of individual methods on performance of workflows.</strong> Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI).
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-9" class="section level3">
+<h3>Tissue-aware Standard</h3>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-61-1.png" alt="**Impact of individual methods on performance of workflows.** Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI)." width="100%" />
+<p class="caption">
+<strong>Impact of individual methods on performance of workflows.</strong> Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI).
+</p>
+</div>
+</div>
+</div>
+<div id="samples-19" class="section level2 tabset tabset-fade tabset-pills">
+<h2 class="tabset tabset-fade tabset-pills">6 samples</h2>
+<div id="tissue-naive-standard-10" class="section level3">
+<h3>Tissue-naive Standard</h3>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-63-1.png" alt="**Impact of individual methods on performance of workflows.** Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI)." width="100%" />
+<p class="caption">
+<strong>Impact of individual methods on performance of workflows.</strong> Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI).
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-10" class="section level3">
+<h3>Tissue-aware Standard</h3>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-64-1.png" alt="**Impact of individual methods on performance of workflows.** Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI)." width="100%" />
+<p class="caption">
+<strong>Impact of individual methods on performance of workflows.</strong> Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI).
+</p>
+</div>
+</div>
+</div>
+<div id="samples-20" class="section level2 tabset tabset-fade tabset-pills">
+<h2 class="tabset tabset-fade tabset-pills">7 samples</h2>
+<div id="tissue-naive-standard-11" class="section level3">
+<h3>Tissue-naive Standard</h3>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-66-1.png" alt="**Impact of individual methods on performance of workflows.** Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI)." width="100%" />
+<p class="caption">
+<strong>Impact of individual methods on performance of workflows.</strong> Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI).
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-11" class="section level3">
+<h3>Tissue-aware Standard</h3>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-67-1.png" alt="**Impact of individual methods on performance of workflows.** Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI)." width="100%" />
+<p class="caption">
+<strong>Impact of individual methods on performance of workflows.</strong> Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI).
+</p>
+</div>
+</div>
+</div>
+<div id="samples-21" class="section level2 tabset tabset-fade tabset-pills">
+<h2 class="tabset tabset-fade tabset-pills">9 samples</h2>
+<div id="tissue-naive-standard-12" class="section level3">
+<h3>Tissue-naive Standard</h3>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-69-1.png" alt="**Impact of individual methods on performance of workflows.** Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI)." width="100%" />
+<p class="caption">
+<strong>Impact of individual methods on performance of workflows.</strong> Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI).
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-12" class="section level3">
+<h3>Tissue-aware Standard</h3>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-70-1.png" alt="**Impact of individual methods on performance of workflows.** Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI)." width="100%" />
+<p class="caption">
+<strong>Impact of individual methods on performance of workflows.</strong> Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI).
+</p>
+</div>
+</div>
+</div>
+<div id="samples-22" class="section level2 tabset tabset-fade tabset-pills">
+<h2 class="tabset tabset-fade tabset-pills">11 samples</h2>
+<div id="tissue-naive-standard-13" class="section level3">
+<h3>Tissue-naive Standard</h3>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-72-1.png" alt="**Impact of individual methods on performance of workflows.** Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI)." width="100%" />
+<p class="caption">
+<strong>Impact of individual methods on performance of workflows.</strong> Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI).
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-13" class="section level3">
+<h3>Tissue-aware Standard</h3>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-73-1.png" alt="**Impact of individual methods on performance of workflows.** Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI)." width="100%" />
+<p class="caption">
+<strong>Impact of individual methods on performance of workflows.</strong> Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI).
+</p>
+</div>
+</div>
+</div>
+<div id="samples-23" class="section level2 tabset tabset-fade tabset-pills">
+<h2 class="tabset tabset-fade tabset-pills">13 samples</h2>
+<div id="tissue-naive-standard-14" class="section level3">
+<h3>Tissue-naive Standard</h3>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-75-1.png" alt="**Impact of individual methods on performance of workflows.** Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI)." width="100%" />
+<p class="caption">
+<strong>Impact of individual methods on performance of workflows.</strong> Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI).
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-14" class="section level3">
+<h3>Tissue-aware Standard</h3>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-76-1.png" alt="**Impact of individual methods on performance of workflows.** Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI)." width="100%" />
+<p class="caption">
+<strong>Impact of individual methods on performance of workflows.</strong> Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI).
+</p>
+</div>
+</div>
+</div>
+<div id="samples-24" class="section level2 tabset tabset-fade tabset-pills">
+<h2 class="tabset tabset-fade tabset-pills">16 samples</h2>
+<div id="tissue-naive-standard-15" class="section level3">
+<h3>Tissue-naive Standard</h3>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-78-1.png" alt="**Impact of individual methods on performance of workflows.** Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI)." width="100%" />
+<p class="caption">
+<strong>Impact of individual methods on performance of workflows.</strong> Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI).
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-15" class="section level3">
+<h3>Tissue-aware Standard</h3>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-79-1.png" alt="**Impact of individual methods on performance of workflows.** Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI)." width="100%" />
+<p class="caption">
+<strong>Impact of individual methods on performance of workflows.</strong> Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI).
+</p>
+</div>
+</div>
+</div>
+<div id="samples-25" class="section level2 tabset tabset-fade tabset-pills">
+<h2 class="tabset tabset-fade tabset-pills">25 samples</h2>
+<div id="tissue-naive-standard-16" class="section level3">
+<h3>Tissue-naive Standard</h3>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-81-1.png" alt="**Impact of individual methods on performance of workflows.** Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI)." width="100%" />
+<p class="caption">
+<strong>Impact of individual methods on performance of workflows.</strong> Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI).
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-16" class="section level3">
+<h3>Tissue-aware Standard</h3>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-82-1.png" alt="**Impact of individual methods on performance of workflows.** Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI)." width="100%" />
+<p class="caption">
+<strong>Impact of individual methods on performance of workflows.</strong> Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI).
+</p>
+</div>
+</div>
+</div>
+<div id="samples-26" class="section level2 tabset tabset-fade tabset-pills">
+<h2 class="tabset tabset-fade tabset-pills">40 samples</h2>
+<div id="tissue-naive-standard-17" class="section level3">
+<h3>Tissue-naive Standard</h3>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-84-1.png" alt="**Impact of individual methods on performance of workflows.** Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI)." width="100%" />
+<p class="caption">
+<strong>Impact of individual methods on performance of workflows.</strong> Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI).
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-17" class="section level3">
+<h3>Tissue-aware Standard</h3>
+<div class="figure">
+<img src="gtex_resampling_plots_files/figure-html/unnamed-chunk-85-1.png" alt="**Impact of individual methods on performance of workflows.** Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI)." width="100%" />
+<p class="caption">
+<strong>Impact of individual methods on performance of workflows.</strong> Each bar in the barplot corresponds to a specific method, showing the proportion of times (x-axis) that workflows including that particular method (y-axis) were significantly better than other workflows. In order to make the comparison of between-sample normalization methods fair, workflows also including CPM, RPKM, or TPM were left out because it is not possible to pair them with TMM or UQ normalization. Similarly, TMM and UQ methods are not included for “no within-sample normalization” (NO–WI).
+</p>
+</div>
+</div>
+</div>
+</div>
+<div id="consistency-of-workflows-with-varying-sample-size" class="section level1 tabset tabset-fade tabset-pills">
+<h1 class="tabset tabset-fade tabset-pills">Consistency of Workflows with Varying Sample Size</h1>
+<p>Sample size refers to the number of samples used to create a network.</p>
+<div id="tissue-naive-standard-18" class="section level2">
+<h2>Tissue-naive Standard</h2>
+<div class="figure">
+<img src="plots/gtex_sample_size_naive_factor_heatmap.png" alt="The heatmap shows the number of times (cell color) each workflow (row) outperforms other workflows as sample size varies (columns), when the resulting coexpression networks are evaluated based on the tissue-naive gold standard. The darkest colors indicate workflows that are significantly better than the most other workflows. In addition, the top 5 workflows in each column are marked with their rank, with ties given minimum rank." width="100%" />
+<p class="caption">
+The heatmap shows the number of times (cell color) each workflow (row) outperforms other workflows as sample size varies (columns), when the resulting coexpression networks are evaluated based on the tissue-naive gold standard. The darkest colors indicate workflows that are significantly better than the most other workflows. In addition, the top 5 workflows in each column are marked with their rank, with ties given minimum rank.
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-18" class="section level2">
+<h2>Tissue-aware Standard</h2>
+<div class="figure">
+<img src="plots/gtex_sample_size_knowledge_factor_heatmap.png" alt="The heatmap shows the number of times (cell color) each workflow (row) outperforms other workflows as sample size varies (columns), when the resulting coexpression networks are evaluated based on the tissue-aware gold standard. The darkest colors indicate workflows that are significantly better than the most other workflows. In addition, the top 5 workflows in each column are marked with their rank, with ties given minimum rank." width="100%" />
+<p class="caption">
+The heatmap shows the number of times (cell color) each workflow (row) outperforms other workflows as sample size varies (columns), when the resulting coexpression networks are evaluated based on the tissue-aware gold standard. The darkest colors indicate workflows that are significantly better than the most other workflows. In addition, the top 5 workflows in each column are marked with their rank, with ties given minimum rank.
+</p>
+</div>
+</div>
+</div>
+<div id="consistency-of-workflows-with-varying-sample-similarity" class="section level1 tabset tabset-fade tabset-pills">
+<h1 class="tabset tabset-fade tabset-pills">Consistency of Workflows with Varying Sample Similarity</h1>
+<p>Sample gene expression similarity is determined by subsetting all samples to the 50% most variable genes in the tissue it came from, then calculating the spearman correlation between all sample pairs in the experiment and taking the median value.</p>
+<div id="tissue-naive-standard-19" class="section level2">
+<h2>Tissue-naive Standard</h2>
+<div class="figure">
+<img src="plots/gtex_sample_correlation_naive_factor_heatmap.png" alt="The heatmap shows the number of times (cell color) each workflow (row) outperforms other workflows as sample similarity varies (columns), when the resulting coexpression networks are evaluated based on the tissue-naive gold standard. The darkest colors indicate workflows that are significantly better than the most other workflows. In addition, the top 5 workflows in each column are marked with their rank, with ties given minimum rank." width="100%" />
+<p class="caption">
+The heatmap shows the number of times (cell color) each workflow (row) outperforms other workflows as sample similarity varies (columns), when the resulting coexpression networks are evaluated based on the tissue-naive gold standard. The darkest colors indicate workflows that are significantly better than the most other workflows. In addition, the top 5 workflows in each column are marked with their rank, with ties given minimum rank.
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-19" class="section level2">
+<h2>Tissue-aware Standard</h2>
+<div class="figure">
+<img src="plots/gtex_sample_correlation_knowledge_factor_heatmap.png" alt="The heatmap shows the number of times (cell color) each workflow (row) outperforms other workflows as sample similarity varies (columns), when the resulting coexpression networks are evaluated based on the tissue-aware gold standard. The darkest colors indicate workflows that are significantly better than the most other workflows. In addition, the top 5 workflows in each column are marked with their rank, with ties given minimum rank." width="100%" />
+<p class="caption">
+The heatmap shows the number of times (cell color) each workflow (row) outperforms other workflows as sample similarity varies (columns), when the resulting coexpression networks are evaluated based on the tissue-aware gold standard. The darkest colors indicate workflows that are significantly better than the most other workflows. In addition, the top 5 workflows in each column are marked with their rank, with ties given minimum rank.
+</p>
+</div>
+</div>
+</div>
+<div id="consistency-of-workflows-with-varying-read-count-diversity" class="section level1 tabset tabset-fade tabset-pills">
+<h1 class="tabset tabset-fade tabset-pills">Consistency of Workflows with Varying Read Count Diversity</h1>
+<p>Count sum diversity is calulated for a given experiment by taking the standard deviation of the sum of counts in each sample.</p>
+<div id="tissue-naive-standard-20" class="section level2">
+<h2>Tissue-naive Standard</h2>
+<div class="figure">
+<img src="plots/gtex_sample_sum_st_dev_naive_factor_heatmap.png" alt="The heatmap shows the number of times (cell color) each workflow (row) outperforms other workflows as read count diversity varies (columns), when the resulting coexpression networks are evaluated based on the tissue-naive gold standard. The darkest colors indicate workflows that are significantly better than the most other workflows. In addition, the top 5 workflows in each column are marked with their rank, with ties given minimum rank." width="100%" />
+<p class="caption">
+The heatmap shows the number of times (cell color) each workflow (row) outperforms other workflows as read count diversity varies (columns), when the resulting coexpression networks are evaluated based on the tissue-naive gold standard. The darkest colors indicate workflows that are significantly better than the most other workflows. In addition, the top 5 workflows in each column are marked with their rank, with ties given minimum rank.
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-20" class="section level2">
+<h2>Tissue-aware Standard</h2>
+<div class="figure">
+<img src="plots/gtex_sample_sum_st_dev_knowledge_factor_heatmap.png" alt="The heatmap shows the number of times (cell color) each workflow (row) outperforms other workflows as read count diversity varies (columns), when the resulting coexpression networks are evaluated based on the tissue-aware gold standard. The darkest colors indicate workflows that are significantly better than the most other workflows. In addition, the top 5 workflows in each column are marked with their rank, with ties given minimum rank." width="100%" />
+<p class="caption">
+The heatmap shows the number of times (cell color) each workflow (row) outperforms other workflows as read count diversity varies (columns), when the resulting coexpression networks are evaluated based on the tissue-aware gold standard. The darkest colors indicate workflows that are significantly better than the most other workflows. In addition, the top 5 workflows in each column are marked with their rank, with ties given minimum rank.
+</p>
+</div>
+</div>
+</div>
+<div id="consistency-of-workflows-with-varying-tissue" class="section level1 tabset tabset-fade tabset-pills">
+<h1 class="tabset tabset-fade tabset-pills">Consistency of Workflows with Varying Tissue</h1>
+<p>Tissue refers to the tissue that the samples were taken from.</p>
+<div id="tissue-naive-standard-21" class="section level2">
+<h2>Tissue-naive Standard</h2>
+<div class="figure">
+<img src="plots/gtex_tissue_naive_factor_heatmap.png" alt="The heatmap shows the number of times (cell color) each workflow (row) outperforms other workflows in different tissues (columns), when the resulting coexpression networks are evaluated based on the tissue-naive gold standard. The darkest colors indicate workflows that are significantly better than the most other workflows. In addition, the top 5 workflows in each column are marked with their rank, with ties given minimum rank." width="100%" />
+<p class="caption">
+The heatmap shows the number of times (cell color) each workflow (row) outperforms other workflows in different tissues (columns), when the resulting coexpression networks are evaluated based on the tissue-naive gold standard. The darkest colors indicate workflows that are significantly better than the most other workflows. In addition, the top 5 workflows in each column are marked with their rank, with ties given minimum rank.
+</p>
+</div>
+</div>
+<div id="tissue-aware-standard-21" class="section level2">
+<h2>Tissue-aware Standard</h2>
+<div class="figure">
+<img src="plots/gtex_tissue_knowledge_factor_heatmap.png" alt="The heatmap shows the number of times (cell color) each workflow (row) outperforms other workflows in different tissues (columns), when the resulting coexpression networks are evaluated based on the tissue-aware gold standard. The darkest colors indicate workflows that are significantly better than the most other workflows. In addition, the top 5 workflows in each column are marked with their rank, with ties given minimum rank." width="100%" />
+<p class="caption">
+The heatmap shows the number of times (cell color) each workflow (row) outperforms other workflows in different tissues (columns), when the resulting coexpression networks are evaluated based on the tissue-aware gold standard. The darkest colors indicate workflows that are significantly better than the most other workflows. In addition, the top 5 workflows in each column are marked with their rank, with ties given minimum rank.
+</p>
+</div>
+</div>
+</div>
+
+
+
+</div>
+</div>
+
+</div>
+
+<script>
+
+// add bootstrap table styles to pandoc tables
+function bootstrapStylePandocTables() {
+  $('tr.odd').parent('tbody').parent('table').addClass('table table-condensed');
+}
+$(document).ready(function () {
+  bootstrapStylePandocTables();
+});
+
+
+</script>
+
+<!-- tabsets -->
+
+<script>
+$(document).ready(function () {
+  window.buildTabsets("TOC");
+});
+
+$(document).ready(function () {
+  $('.tabset-dropdown > .nav-tabs > li').click(function () {
+    $(this).parent().toggleClass('nav-tabs-open')
+  });
+});
+</script>
+
+<!-- code folding -->
+
+<script>
+$(document).ready(function ()  {
+
+    // move toc-ignore selectors from section div to header
+    $('div.section.toc-ignore')
+        .removeClass('toc-ignore')
+        .children('h1,h2,h3,h4,h5').addClass('toc-ignore');
+
+    // establish options
+    var options = {
+      selectors: "h1,h2,h3",
+      theme: "bootstrap3",
+      context: '.toc-content',
+      hashGenerator: function (text) {
+        return text.replace(/[.\\/?&!#<>]/g, '').replace(/\s/g, '_');
+      },
+      ignoreSelector: ".toc-ignore",
+      scrollTo: 0
+    };
+    options.showAndHide = true;
+    options.smoothScroll = true;
+
+    // tocify
+    var toc = $("#TOC").tocify(options).data("toc-tocify");
+});
+</script>
+
+<!-- dynamically load mathjax for compatibility with self-contained -->
+<script>
+  (function () {
+    var script = document.createElement("script");
+    script.type = "text/javascript";
+    script.src  = "https://mathjax.rstudio.com/latest/MathJax.js?config=TeX-AMS-MML_HTMLorMML";
+    document.getElementsByTagName("head")[0].appendChild(script);
+  })();
+</script>
+
+</body>
+</html>

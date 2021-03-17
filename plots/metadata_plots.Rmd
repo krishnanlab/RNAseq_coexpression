@@ -1,0 +1,83 @@
+---
+title: "R Notebook"
+output: html_notebook
+---
+
+```{r}
+library(tidyverse)
+library(knitr)
+library(rmarkdown)
+library(patchwork)
+library(ggfittext)
+library(ggplotify)
+library(Matrix)
+library(grid)
+```
+
+```{r}
+metadata <- read_delim("../data/2020-03-19_metadata_rnaseq_coexp_paper.txt", delim = "\t", col_names = T)
+```
+
+```{r}
+sra <- metadata %>% filter(project != "SRP012682")
+gtex <- metadata %>% filter(project == "SRP012682") %>% filter(!is.na(tissue))
+```
+
+```{r}
+sra %>% 
+  select(project, tissue) %>% 
+  distinct() %>% 
+  group_by(tissue) %>% 
+  tally() %>% 
+  ggplot(aes(x = reorder(tissue, n), y = n)) +
+  #geom_hline(yintercept = 10, color = "#999999", size = 0.1) +
+  #geom_hline(yintercept = 20, color = "#999999", size = 0.1) +
+  #geom_hline(yintercept = 30, color = "#999999", size = 0.1) +
+  #geom_hline(yintercept = 40, color = "#999999", size = 0.1) +
+  geom_col(fill = "gray") +
+  ylim(0,40) +
+  coord_flip() +
+  geom_text(aes(label = n, hjust = -0.2)) +
+  theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank(),
+        plot.margin = margin(5,5,5,5))
+```
+```{r}
+ggsave("/Users/kayla/Desktop/sra_ds_per_tissue.pdf", device = "pdf",
+       width = 6, height = 10)
+```
+
+```{r}
+gtex %>% 
+  group_by(tissue) %>% 
+  tally() %>% 
+  ggplot(aes(x = reorder(tissue, n), y = n)) +
+  geom_col(fill = "#2171b5") +
+  ylim(0,1500) +
+  coord_flip() +
+  geom_text(aes(label = n, hjust = -0.2)) +
+  theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank(),
+        plot.margin = margin(5,10,5,5))
+```
+
+```{r}
+ggsave("/Users/kayla/Desktop/gtex_samples_per_tissue.pdf", device = "pdf",
+       width = 6, height = 10)
+```
+
+How many coexpression networks did I build?
+- 259 SRA networks
+- 31 GTEx networks
+- 2430 resampling networks (27 tissues with 10 trials for 9 sample sizes)
+30 times each (once per workflow)
+
+
+
+

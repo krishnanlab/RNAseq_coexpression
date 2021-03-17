@@ -1,0 +1,14 @@
+name: "Guidelines on Building Coexpression Networks from RNA-seq Data"
+navbar:
+  title: "Guidelines on Building Coexpression Networks from RNA-seq Data"
+  right:
+    - text: "GTEx Results"
+      href: gtex_plots.html
+    - text: "SRA Results"
+      href: sra_plots.html
+    - text: "GTEx Resampling"
+      href: gtex_resampling_plots.html
+output_dir: "docs"
+output:
+  html_document:
+    theme: flatly

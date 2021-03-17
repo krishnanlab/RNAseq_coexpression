@@ -1,0 +1,1017 @@
+---
+title: "all factor heat maps"
+output: html_document
+---
+
+```{r include=FALSE}
+library(tidyverse)
+library(knitr)
+library(rmarkdown)
+library(patchwork)
+library(ggfittext)
+library(pheatmap)
+library(ggplotify)
+library(Matrix)
+```
+# SRA Data
+```{r include=FALSE}
+snr <- read_delim("../data/2020-03-19_sra_naive_results.txt",
+                    delim = "\t", col_names = T)
+snpr <- read_delim("../data/2020-03-19_prec_recall_sra_naive_results.txt",
+                   delim = "\t", col_names = T) %>% 
+  filter(recall == 20)
+skr <- read_delim("../data/2020-03-19_sra_knowledge_results.txt",
+                    delim = "\t", col_names = T)
+skpr <- read_delim("../data/2020-03-19_prec_recall_sra_knowledge_results.txt",
+                   delim = "\t", col_names = T) %>% 
+  filter(recall == 20)
+
+snr$method <- gsub("quantile", "QNT", snr$method)
+snr$method <- gsub("wTO", "WTO", snr$method)
+snpr$method <- gsub("quantile", "QNT", snpr$method)
+snpr$method <- gsub("wTO", "WTO", snpr$method)
+
+skr$method <- gsub("quantile", "QNT", skr$method)
+skr$method <- gsub("wTO", "WTO", skr$method)
+skpr$method <- gsub("quantile", "QNT", skpr$method)
+skpr$method <- gsub("wTO", "WTO", skpr$method)
+
+#remove spinal_cord
+snr <- snr %>% filter(tissue != "spinal_cord")
+skr <- skr %>% filter(tissue != "spinal_cord")
+snpr <- snpr %>% filter(tissue != "spinal_cord")
+skpr <- skpr %>% filter(tissue != "spinal_cord")
+```
+
+# GTEx Data
+```{r include=FALSE}
+gnr <- read_delim("../data/2020-03-19_gtex_naive_results.txt",
+                    delim = "\t", col_names = T)
+gnpr <- read_delim("../data/2020-03-19_prec_recall_gtex_naive_results.txt",
+                   delim = "\t", col_names = T) %>% 
+  filter(recall == 20)
+gkr <- read_delim("../data/2020-03-19_gtex_knowledge_results.txt",
+                    delim = "\t", col_names = T)
+gkpr <- read_delim("../data/2020-03-19_prec_recall_gtex_knowledge_results.txt",
+                   delim = "\t", col_names = T) %>% 
+  filter(recall == 20)
+
+gnr$method <- gsub("quantile", "QNT", gnr$method)
+gnr$method <- gsub("wTO", "WTO", gnr$method)
+gnpr$method <- gsub("quantile", "QNT", gnpr$method)
+gnpr$method <- gsub("wTO", "WTO", gnpr$method)
+
+gkr$method <- gsub("quantile", "QNT", gkr$method)
+gkr$method <- gsub("wTO", "WTO", gkr$method)
+gkpr$method <- gsub("quantile", "QNT", gkpr$method)
+gkpr$method <- gsub("wTO", "WTO", gkpr$method)
+```
+
+# GTEx resampling data
+```{r include=FALSE}
+rnr <- read_delim("../data/2020-03-19_gtex_resampling_naive_results.txt",
+                    delim = "\t", col_names = T)
+rnpr <- read_delim("../data/2020-03-19_prec_recall_gtex_resampling_naive_results.txt",
+                   delim = "\t", col_names = T) %>% 
+  filter(recall == 20)
+rkr <- read_delim("../data/2020-03-19_gtex_resampling_knowledge_results.txt",
+                    delim = "\t", col_names = T)
+rkpr <- read_delim("../data/2020-03-19_prec_recall_gtex_resampling_knowledge_results.txt",
+                   delim = "\t", col_names = T) %>% 
+  filter(recall == 20)
+
+rnr$method <- gsub("quantile", "QNT", rnr$method)
+rnr$method <- gsub("wTO", "WTO", rnr$method)
+rnpr$method <- gsub("quantile", "QNT", rnpr$method)
+rnpr$method <- gsub("wTO", "WTO", rnpr$method)
+
+rkr$method <- gsub("quantile", "QNT", rkr$method)
+rkr$method <- gsub("wTO", "WTO", rkr$method)
+rkpr$method <- gsub("quantile", "QNT", rkpr$method)
+rkpr$method <- gsub("wTO", "WTO", rkpr$method)
+```
+
+# Method Codes
+```{r}
+method_codes <- read_delim("../data/2020-03-19_method_codes.txt",
+                           delim = "\t", col_names = T)
+method_codes$method <- gsub("quantile", "QNT", method_codes$method)
+method_codes$method <- gsub("wTO", "WTO", method_codes$method)
+```
+
+# Functions
+```{r include=FALSE}
+#functions to build heatmap
+get_times_greater_than_matrix <- function(meth_df){
+  #df should be methods_* df (each row is performance on given dataset)
+  counts_output <- matrix(rep(0, 900), nrow = 30, ncol = 30)
+  colnames(counts_output) <- colnames(meth_df)
+  rownames(counts_output) <- colnames(meth_df)
+  
+  for(num in 1:30){
+  a <- pull(meth_df, num)
+  for(val in 1:30){
+    if (num == val){
+      counts_output[val, num] <- 0.5
+      next
+    }
+    b <- pull(meth_df, val)
+    s <- sum(a < b)
+    s <- s/nrow(meth_df)
+    counts_output[val, num] <- s
+  }
+  }
+  return(counts_output)
+}
+
+get_significance_matrix <- function(df, performance_col_position, method_col_position){
+  #df tidy format with method as a column and performance as a column
+  sig_output <- pairwise.wilcox.test(x = pull(df, performance_col_position),
+                                     g = pull(df, method_col_position),
+                                     paired = TRUE,
+                                     p.adjust.method = "BH")$p.value
+  
+  #add row/col to make 30 by 30
+  CLR <- sig_output[1,]
+  CLR[1] <- NA
+  sig_output <- rbind(CLR, sig_output)
+  WTO <- sig_output[,29]
+  WTO[30] <- NA
+  sig_output <- cbind(sig_output, WTO)
+  
+  #make symmetric
+  diag(sig_output) <- 1
+  sig_output <- Matrix::forceSymmetric(sig_output, uplo = "L")
+  sig_output <- as.matrix(sig_output)
+  #replace p vals with sig/not sig
+  sig_wilcox_gtex_naive <- ifelse(sig_output < 0.01, "*", " ")
+}
+
+get_method_times_sig_greater <- function(times_matrix, sig_matrix){
+  #times_matrix is output of get_times_greater_than_matrix
+  #sig_matrix is output of get_significance_matrix
+  #make times_matrix into tibble and get times method_one > method_two
+  times_greater_than_tibble <- as_tibble(times_matrix)
+  times_greater_than_tibble$method_one <- colnames(times_matrix)
+  times_greater_than_tibble <- times_greater_than_tibble %>% 
+    gather(key = method_two, value = times_method_one_is_greater_than_method_two, 1:30)
+  #make sig_matrix into tibble and get times corrected wilcox p value was
+  #significant between method_one and method_two
+  sig_wilcox_tibble <-  as_tibble(sig_matrix)
+  sig_wilcox_tibble$method_one <- colnames(sig_matrix)
+  sig_wilcox_tibble <- sig_wilcox_tibble %>%
+    gather(key = method_two, value = significance, 1:30)
+  sig_wilcox_tibble$significance <- ifelse(sig_wilcox_tibble$significance == "*",
+                                           T, F)
+  
+  #join above two tibbles into one
+  greater_than_significance_tibble <- left_join(times_greater_than_tibble,
+                                                sig_wilcox_tibble,
+                                                by = c("method_one", "method_two"))
+  #make T/F column designating whether method_one > method_two AND significant by 
+  #corrected wilcox p value
+  greater_than_significance_tibble$method_one_greater_than_and_sig <-
+    ifelse(greater_than_significance_tibble$times_method_one_is_greater_than_method_two > 0.5 &
+       greater_than_significance_tibble$significance == T, T, F)
+  #summarize above info by method
+  method_summary <- greater_than_significance_tibble %>%
+    group_by(method_one) %>% 
+    summarise(times_sig_and_greater = sum(method_one_greater_than_and_sig))
+  #change col name from method_one to method
+  colnames(method_summary) <- c("method", "times_sig_and_greater")
+  
+  return(method_summary)
+}
+```
+
+# GTEx naive sample size plot
+```{r}
+#make df for plot: sample_num | method | times significantly greater
+naive_gr_sample_size_plot_df <- tibble(sample_num = 4, method = "fake", times_sig_and_greater = 13)
+
+for (ss in unique(rnr$sample_num)){
+  size_df <-  rnr %>% filter(sample_num == ss)
+  
+  size_methods_df <- size_df %>% 
+    select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+    spread(key = method, value = log2_auprc_over_prior) %>% 
+    select(-project, -tissue, -trial)
+  
+  size_times_mat <- get_times_greater_than_matrix(size_methods_df)
+  
+  size_sig_mat <- get_significance_matrix(size_df, 6, 3)
+  
+  size_summary <- get_method_times_sig_greater(size_times_mat, size_sig_mat)
+  #add sample_num to size_summary
+  size_summary$sample_num <- ss
+  
+  naive_gr_sample_size_plot_df <- bind_rows(naive_gr_sample_size_plot_df, size_summary)
+}
+
+naive_gr_sample_size_plot_df <- naive_gr_sample_size_plot_df[-1,]
+```
+
+```{r}
+# add "all" as sample size to above df
+all_methods_df <- gnr %>% 
+  select(project, tissue, method, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue)
+
+all_times_mat <- get_times_greater_than_matrix(all_methods_df)
+all_sig_mat <- get_significance_matrix(gnr, 4, 3)
+all_summary <- get_method_times_sig_greater(all_times_mat, all_sig_mat)
+all_summary$sample_num <- "all"
+
+naive_gr_sample_size_plot_df$sample_num <- as.character(naive_gr_sample_size_plot_df$sample_num)
+naive_gr_sample_size_plot_df <- bind_rows(naive_gr_sample_size_plot_df, all_summary)
+```
+
+```{r}
+#find ranks
+naive_gr_sample_size_plot_df <- naive_gr_sample_size_plot_df %>% 
+  group_by(sample_num) %>% 
+  mutate(group_rank = rank(times_sig_and_greater, ties.method = "max"))
+naive_gr_sample_size_plot_df <- naive_gr_sample_size_plot_df %>% mutate(group_rank = (31-group_rank))
+#only show ranks up to 5
+naive_gr_sample_size_plot_df$group_rank <- ifelse(naive_gr_sample_size_plot_df$group_rank > 5,
+                                                           " ", naive_gr_sample_size_plot_df$group_rank)
+```
+
+```{r}
+#get plot order
+gtex_naive_sample_size_plot_order <- naive_gr_sample_size_plot_df %>% 
+  group_by(method) %>% 
+  summarise(overall_times_sig_greater = sum(times_sig_and_greater)) %>% 
+  arrange(desc(overall_times_sig_greater)) %>% pull(method)
+```
+
+```{r}
+#plot
+full_sample_size_gtex_naive_plot <- naive_gr_sample_size_plot_df %>% 
+  ggplot(aes(x = factor(sample_num, 
+                        levels = c("5", "6", "7", "9","11", "13", "16","25","40", "all")), 
+             y = factor(method, levels = rev(gtex_naive_sample_size_plot_order)), 
+             fill = times_sig_and_greater)) +
+  scale_fill_gradient(low = "white", high = "black") +
+  labs(fill = "Times Significantly Greater") +
+  geom_tile(width = 1) +
+  geom_text(aes(label = group_rank), color = "white", size = 3) +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank(),
+        axis.text.y = element_blank(),
+        legend.position = "none",
+        plot.margin = margin(5,5,5,0.5))
+```
+
+```{r}
+#labels for plot
+labels_gtex_naive_sample_size_plot <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, 
+                                 levels = rev(gtex_naive_sample_size_plot_order)), 
+             fill = value))+
+  geom_tile(color = "white", size = 1) +
+  geom_text(aes(label = value)) +
+  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
+                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
+                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
+                    "UQ" = "#238b45", "   " = "#feedde",
+                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0,5,5)) +
+  guides(fill = F)
+```
+
+```{r}
+sample_size_fig_naive <- labels_gtex_naive_sample_size_plot + full_sample_size_gtex_naive_plot + plot_layout(ncol = 2, widths = c(1,4))
+```
+
+# GTEx knowledge sample size plot
+```{r}
+#make df for plot: sample_num | method | times significantly greater
+knowledge_gr_sample_size_plot_df <- tibble(sample_num = 4, method = "fake", times_sig_and_greater = 13)
+
+for (ss in unique(rkr$sample_num)){                            
+  
+  size_df <-  rkr %>% filter(sample_num == ss)
+  
+  size_methods_df <- size_df %>% 
+    select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+    spread(key = method, value = log2_auprc_over_prior) %>% 
+    select(-project, -tissue, -trial)
+  
+  size_times_mat <- get_times_greater_than_matrix(size_methods_df)
+  
+  size_sig_mat <- get_significance_matrix(size_df, 6, 3)
+  
+  size_summary <- get_method_times_sig_greater(size_times_mat, size_sig_mat)
+  #add sample_num to size_summary
+  size_summary$sample_num <- ss
+  
+  knowledge_gr_sample_size_plot_df <- bind_rows(knowledge_gr_sample_size_plot_df, size_summary)
+}
+
+knowledge_gr_sample_size_plot_df <- knowledge_gr_sample_size_plot_df[-1,]
+```
+
+```{r}
+# add "all" as sample size to above df
+all_methods_df <- gkr %>% 
+  select(project, tissue, method, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue)
+
+all_times_mat <- get_times_greater_than_matrix(all_methods_df)
+all_sig_mat <- get_significance_matrix(gkr, 4, 3)
+all_summary <- get_method_times_sig_greater(all_times_mat, all_sig_mat)
+all_summary$sample_num <- "all"
+
+knowledge_gr_sample_size_plot_df$sample_num <- as.character(knowledge_gr_sample_size_plot_df$sample_num)
+knowledge_gr_sample_size_plot_df <- bind_rows(knowledge_gr_sample_size_plot_df, all_summary)
+```
+
+```{r}
+#find ranks
+knowledge_gr_sample_size_plot_df <- knowledge_gr_sample_size_plot_df %>% 
+  group_by(sample_num) %>% 
+  mutate(group_rank = rank(times_sig_and_greater, ties.method = "max"))
+knowledge_gr_sample_size_plot_df <- knowledge_gr_sample_size_plot_df %>% mutate(group_rank = (31-group_rank))
+#only show ranks up to 5
+knowledge_gr_sample_size_plot_df$group_rank <- ifelse(knowledge_gr_sample_size_plot_df$group_rank > 5,
+                                                           " ", knowledge_gr_sample_size_plot_df$group_rank)
+```
+
+```{r}
+#get plot order
+gtex_knowledge_sample_size_plot_order <- knowledge_gr_sample_size_plot_df %>% 
+  group_by(method) %>% 
+  summarise(overall_times_sig_greater = sum(times_sig_and_greater)) %>% 
+  arrange(desc(overall_times_sig_greater)) %>% pull(method)
+```
+
+```{r}
+#plot
+full_sample_size_gtex_knowledge_plot <- knowledge_gr_sample_size_plot_df %>% 
+  ggplot(aes(x = factor(sample_num, levels = c("5", "6", "7", "9","11", "13", "16","25","40", "all")), 
+             y = factor(method, levels = rev(gtex_knowledge_sample_size_plot_order)), 
+             fill = times_sig_and_greater)) +
+  scale_fill_gradient(low = "white", high = "black") +
+  labs(fill = "Times Significantly Greater") +
+  geom_tile(width = 1) +
+  geom_text(aes(label = group_rank), color = "white", size = 3) +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank(),
+        axis.text.y = element_blank(),
+        legend.position = "none",
+        plot.margin = margin(5,5,5,0.5))
+```
+
+```{r}
+#labels for plot
+labels_gtex_knowledge_sample_size_plot <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, 
+                                 levels = rev(gtex_knowledge_sample_size_plot_order)), 
+             fill = value))+
+  geom_tile(color = "white", size = 1) +
+  geom_text(aes(label = value)) +
+  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
+                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
+                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
+                    "UQ" = "#238b45", "   " = "#feedde",
+                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0,5,5)) +
+  guides(fill = F)
+```
+
+```{r}
+sample_size_fig_knowledge <- labels_gtex_knowledge_sample_size_plot + full_sample_size_gtex_knowledge_plot + plot_layout(ncol = 2, widths = c(1,4))
+```
+
+# GTEx Naive spearman correlation of samples
+```{r}
+rnr$median_spearman_group <- cut_number(rnr$median_spearman, 5)
+rnr$median_spearman_group <- as.character(rnr$median_spearman_group)
+```
+
+```{r}
+#make df for plot: sample_num | method | times significantly greater
+naive_gr_sample_correlation_plot_df <- tibble(median_spearman_group = "(0.904,0.997]", method = "fake", times_sig_and_greater = 13)
+
+for (g in unique(rnr$median_spearman_group)){
+  size_df <-  rnr %>% filter(median_spearman_group == g)
+  
+  size_methods_df <- size_df %>% 
+    select(project, tissue, method, trial, sample_num, log2_auprc_over_prior) %>% 
+    spread(key = method, value = log2_auprc_over_prior) %>% 
+    select(-project, -tissue, -trial, -sample_num)
+  
+  size_times_mat <- get_times_greater_than_matrix(size_methods_df)
+  
+  size_sig_mat <- get_significance_matrix(size_df, 6, 3)
+  
+  size_summary <- get_method_times_sig_greater(size_times_mat, size_sig_mat)
+  #add group to size_summary
+  size_summary$median_spearman_group <- g
+  
+  naive_gr_sample_correlation_plot_df <- bind_rows(naive_gr_sample_correlation_plot_df, size_summary)
+}
+
+naive_gr_sample_correlation_plot_df <- naive_gr_sample_correlation_plot_df[-1,]
+```
+
+```{r}
+#find ranks
+naive_gr_sample_correlation_plot_df <- naive_gr_sample_correlation_plot_df %>% 
+  group_by(median_spearman_group) %>% 
+  mutate(group_rank = rank(times_sig_and_greater, ties.method = "max"))
+naive_gr_sample_correlation_plot_df <- naive_gr_sample_correlation_plot_df %>% mutate(group_rank = (31-group_rank))
+#only show ranks up to 5
+naive_gr_sample_correlation_plot_df$group_rank <- ifelse(naive_gr_sample_correlation_plot_df$group_rank > 5,
+                                                           " ", naive_gr_sample_correlation_plot_df$group_rank)
+```
+
+```{r}
+#get plot order
+gtex_naive_sample_correlation_plot_order <- naive_gr_sample_correlation_plot_df %>% 
+  group_by(method) %>% 
+  summarise(overall_times_sig_greater = sum(times_sig_and_greater)) %>% 
+  arrange(desc(overall_times_sig_greater)) %>% pull(method)
+```
+
+```{r}
+#plot
+full_sample_correlation_gtex_naive_plot <- naive_gr_sample_correlation_plot_df %>% 
+  ggplot(aes(x = factor(median_spearman_group, 
+                        levels = c("[0.527,0.822]", "(0.822,0.853]", 
+                                   "(0.853,0.879]", "(0.879,0.904]", "(0.904,0.997]")), 
+             y = factor(method, levels = rev(gtex_naive_sample_correlation_plot_order)), 
+             fill = times_sig_and_greater)) +
+  scale_fill_gradient(low = "white", high = "black") +
+  labs(fill = "Times Significantly Greater") +
+  geom_tile(width = 1) +
+  #scale_x_discrete(labels = c("[0.527,\n0.822]", "(0.822,\n0.853]", 
+   #                           "(0.853,\n0.879]", "(0.879,\n0.904]", "(0.904,\n0.997]")) +
+  geom_text(aes(label = group_rank), color = "white", size = 3) +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank(),
+        axis.text.y = element_blank(),
+        legend.position = "none",
+        plot.margin = margin(5,5,5,0.5))
+```
+
+```{r}
+#labels for plot
+labels_gtex_naive_sample_correlation_plot <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, 
+                                 levels = rev(gtex_naive_sample_correlation_plot_order)), 
+             fill = value))+
+  geom_tile(color = "white", size = 1) +
+  geom_text(aes(label = value)) +
+  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
+                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
+                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
+                    "UQ" = "#238b45", "   " = "#feedde",
+                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0,5,5)) +
+  guides(fill = F)
+```
+
+```{r}
+sample_correlation_fig_naive <- labels_gtex_naive_sample_correlation_plot + full_sample_correlation_gtex_naive_plot + 
+  plot_layout(ncol = 2, widths = c(1,4))
+```
+
+# GTEx Knowledge spearman correlation of samples
+```{r}
+rkr$median_spearman_group <- cut_number(rkr$median_spearman, 5)
+rkr$median_spearman_group <- as.character(rkr$median_spearman_group)
+```
+
+```{r}
+#make df for knowledge plot: sample_num | method | times significantly greater
+knowledge_gr_sample_correlation_plot_df <- tibble(median_spearman_group = "(0.904,0.997]", method = "fake", times_sig_and_greater = 13)
+
+for (g in unique(rkr$median_spearman_group)){
+  size_df <-  rkr %>% filter(median_spearman_group == g)
+  
+  size_methods_df <- size_df %>% 
+    select(project, tissue, method, trial, sample_num, log2_auprc_over_prior) %>% 
+    spread(key = method, value = log2_auprc_over_prior) %>% 
+    select(-project, -tissue, -trial, -sample_num)
+  
+  size_times_mat <- get_times_greater_than_matrix(size_methods_df)
+  
+  size_sig_mat <- get_significance_matrix(size_df, 6, 3)
+  
+  size_summary <- get_method_times_sig_greater(size_times_mat, size_sig_mat)
+  #add group to size_summary
+  size_summary$median_spearman_group <- g
+  
+  knowledge_gr_sample_correlation_plot_df <- bind_rows(knowledge_gr_sample_correlation_plot_df, size_summary)
+}
+
+knowledge_gr_sample_correlation_plot_df <- knowledge_gr_sample_correlation_plot_df[-1,]
+```
+
+```{r}
+#find ranks
+knowledge_gr_sample_correlation_plot_df <- knowledge_gr_sample_correlation_plot_df %>% 
+  group_by(median_spearman_group) %>% 
+  mutate(group_rank = rank(times_sig_and_greater, ties.method = "max"))
+knowledge_gr_sample_correlation_plot_df <- knowledge_gr_sample_correlation_plot_df %>% mutate(group_rank = (31-group_rank))
+#only show ranks up to 5
+knowledge_gr_sample_correlation_plot_df$group_rank <- ifelse(knowledge_gr_sample_correlation_plot_df$group_rank > 5,
+                                                           " ", knowledge_gr_sample_correlation_plot_df$group_rank)
+```
+
+```{r}
+#get plot order
+gtex_knowledge_sample_correlation_plot_order <- knowledge_gr_sample_correlation_plot_df %>% 
+  group_by(method) %>% 
+  summarise(overall_times_sig_greater = sum(times_sig_and_greater)) %>% 
+  arrange(desc(overall_times_sig_greater)) %>% pull(method)
+```
+
+```{r}
+#plot
+full_sample_correlation_gtex_knowledge_plot <- knowledge_gr_sample_correlation_plot_df %>% 
+  ggplot(aes(x = factor(median_spearman_group, 
+                        levels = c("[0.527,0.828]", "(0.828,0.855]", 
+                                   "(0.855,0.883]", "(0.883,0.909]", "(0.909,0.997]")), 
+             y = factor(method, levels = rev(gtex_knowledge_sample_correlation_plot_order)), 
+             fill = times_sig_and_greater)) +
+  scale_fill_gradient(low = "white", high = "black") +
+  labs(fill = "Times Significantly Greater") +
+  geom_tile(width = 1) +
+  #scale_x_discrete(labels = c("[0.527,\n0.822]", "(0.822,\n0.853]", 
+   #                           "(0.853,\n0.879]", "(0.879,\n0.904]", "(0.904,\n0.997]")) +
+  geom_text(aes(label = group_rank), color = "white", size = 3) +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank(),
+        axis.text.y = element_blank(),
+        legend.position = "none",
+        plot.margin = margin(5,5,5,0.5))
+```
+
+```{r}
+#labels for plot
+labels_gtex_knowledge_sample_correlation_plot <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, 
+                                 levels = rev(gtex_knowledge_sample_correlation_plot_order)), 
+             fill = value))+
+  geom_tile(color = "white", size = 1) +
+  geom_text(aes(label = value)) +
+  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
+                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
+                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
+                    "UQ" = "#238b45", "   " = "#feedde",
+                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0,5,5)) +
+  guides(fill = F)
+```
+
+```{r}
+sample_correlation_fig_knowledge <- labels_gtex_knowledge_sample_correlation_plot + full_sample_correlation_gtex_knowledge_plot + 
+  plot_layout(ncol = 2, widths = c(1,4))
+```
+
+# GTEx Naive standard deviation of sample counts
+```{r}
+rnr$counts_sample_sums_st_dev <- sqrt(rnr$counts_sample_sums_variance)
+rnr$count_sum_st_dev_group <- cut_number(rnr$counts_sample_sums_st_dev, 5)
+rnr$count_sum_st_dev_group <- as.character(rnr$count_sum_st_dev_group)
+```
+
+```{r}
+#make df for plot: sample_num | method | times significantly greater
+naive_gr_sample_sum_st_dev_plot_df <- tibble(count_sum_st_dev_group = "(0.904,0.997]", 
+                                             method = "fake", times_sig_and_greater = 13)
+
+for (g in unique(rnr$count_sum_st_dev_group)){
+  size_df <-  rnr %>% filter(count_sum_st_dev_group == g)
+  
+  size_methods_df <- size_df %>% 
+    select(project, tissue, method, trial, sample_num, log2_auprc_over_prior) %>% 
+    spread(key = method, value = log2_auprc_over_prior) %>% 
+    select(-project, -tissue, -trial, -sample_num)
+  
+  size_times_mat <- get_times_greater_than_matrix(size_methods_df)
+  
+  size_sig_mat <- get_significance_matrix(size_df, 6, 3)
+  
+  size_summary <- get_method_times_sig_greater(size_times_mat, size_sig_mat)
+  #add group to size_summary
+  size_summary$count_sum_st_dev_group <- g
+  
+  naive_gr_sample_sum_st_dev_plot_df <- bind_rows(naive_gr_sample_sum_st_dev_plot_df, size_summary)
+}
+
+naive_gr_sample_sum_st_dev_plot_df <- naive_gr_sample_sum_st_dev_plot_df[-1,]
+```
+
+```{r}
+#find ranks
+naive_gr_sample_sum_st_dev_plot_df <- naive_gr_sample_sum_st_dev_plot_df %>% 
+  group_by(count_sum_st_dev_group) %>% 
+  mutate(group_rank = rank(times_sig_and_greater, ties.method = "max"))
+naive_gr_sample_sum_st_dev_plot_df <- naive_gr_sample_sum_st_dev_plot_df %>% mutate(group_rank = (31-group_rank))
+#only show ranks up to 5
+naive_gr_sample_sum_st_dev_plot_df$group_rank <- ifelse(naive_gr_sample_sum_st_dev_plot_df$group_rank > 5,
+                                                           " ", naive_gr_sample_sum_st_dev_plot_df$group_rank)
+```
+
+```{r}
+#get plot order
+gtex_naive_sample_sum_st_dev_plot_order <- naive_gr_sample_sum_st_dev_plot_df %>% 
+  group_by(method) %>% 
+  summarise(overall_times_sig_greater = sum(times_sig_and_greater)) %>% 
+  arrange(desc(overall_times_sig_greater)) %>% pull(method)
+```
+
+```{r}
+#plot
+full_sample_sum_st_dev_gtex_naive_plot <- naive_gr_sample_sum_st_dev_plot_df %>% 
+  ggplot(aes(x = factor(count_sum_st_dev_group, levels = c("[5.11e+05,3.24e+06]", "(3.24e+06,4.05e+06]",
+                                                      "(4.05e+06,4.92e+06]", "(4.92e+06,6.08e+06]", "(6.08e+06,2.44e+07]")), 
+             y = factor(method, levels = rev(gtex_naive_sample_sum_st_dev_plot_order)), 
+             fill = times_sig_and_greater)) +
+  scale_fill_gradient(low = "white", high = "black") +
+  labs(fill = "Times Significantly Greater") +
+  geom_tile(width = 1) +
+  scale_x_discrete(labels = c("[0.511M,\n3.24M]", "(3.24M,\n4.05M]",
+                                                      "(4.05M,\n4.92M]", "(4.92M,\n6.08M]", "(6.08M,\n24.4M]")) +
+  geom_text(aes(label = group_rank), color = "white", size = 3) +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank(),
+        axis.text.y = element_blank(),
+        legend.position = "none",
+        plot.margin = margin(5,5,5,0.5))
+```
+
+```{r}
+#labels for plot
+labels_gtex_naive_sample_sum_st_dev_plot <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, 
+                                 levels = rev(gtex_naive_sample_sum_st_dev_plot_order)), 
+             fill = value))+
+  geom_tile(color = "white", size = 1) +
+  geom_text(aes(label = value)) +
+  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
+                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
+                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
+                    "UQ" = "#238b45", "   " = "#feedde",
+                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0,5,5)) +
+  guides(fill = F)
+```
+
+```{r}
+sample_sum_st_dev_fig_naive <- labels_gtex_naive_sample_sum_st_dev_plot + full_sample_sum_st_dev_gtex_naive_plot + 
+  plot_layout(ncol = 2, widths = c(1,4))
+```
+
+# GTEx Knowledge standard deviation of sample counts
+```{r}
+rkr$counts_sample_sums_st_dev <- sqrt(rkr$counts_sample_sums_variance)
+rkr$count_sum_st_dev_group <- cut_number(rkr$counts_sample_sums_st_dev, 5)
+rkr$count_sum_st_dev_group <- as.character(rkr$count_sum_st_dev_group)
+```
+
+```{r}
+#make df for plot: sample_num | method | times significantly greater
+knowledge_gr_sample_sum_st_dev_plot_df <- tibble(count_sum_st_dev_group = "(0.904,0.997]", method = "fake", times_sig_and_greater = 13)
+
+for (g in unique(rkr$count_sum_st_dev_group)){
+  size_df <-  rkr %>% filter(count_sum_st_dev_group == g)
+  
+  size_methods_df <- size_df %>% 
+    select(project, tissue, method, trial, sample_num, log2_auprc_over_prior) %>% 
+    spread(key = method, value = log2_auprc_over_prior) %>% 
+    select(-project, -tissue, -trial, -sample_num)
+  
+  size_times_mat <- get_times_greater_than_matrix(size_methods_df)
+  
+  size_sig_mat <- get_significance_matrix(size_df, 6, 3)
+  
+  size_summary <- get_method_times_sig_greater(size_times_mat, size_sig_mat)
+  #add group to size_summary
+  size_summary$count_sum_st_dev_group <- g
+  
+  knowledge_gr_sample_sum_st_dev_plot_df <- bind_rows(knowledge_gr_sample_sum_st_dev_plot_df, size_summary)
+}
+
+knowledge_gr_sample_sum_st_dev_plot_df <- knowledge_gr_sample_sum_st_dev_plot_df[-1,]
+```
+
+```{r}
+#find ranks
+knowledge_gr_sample_sum_st_dev_plot_df <- knowledge_gr_sample_sum_st_dev_plot_df %>% 
+  group_by(count_sum_st_dev_group) %>% 
+  mutate(group_rank = rank(times_sig_and_greater, ties.method = "max"))
+knowledge_gr_sample_sum_st_dev_plot_df <- knowledge_gr_sample_sum_st_dev_plot_df %>% mutate(group_rank = (31-group_rank))
+#only show ranks up to 5
+knowledge_gr_sample_sum_st_dev_plot_df$group_rank <- ifelse(knowledge_gr_sample_sum_st_dev_plot_df$group_rank > 5,
+                                                           " ", knowledge_gr_sample_sum_st_dev_plot_df$group_rank)
+```
+
+```{r}
+#get plot order
+gtex_knowledge_sample_sum_st_dev_plot_order <- knowledge_gr_sample_sum_st_dev_plot_df %>% 
+  group_by(method) %>% 
+  summarise(overall_times_sig_greater = sum(times_sig_and_greater)) %>% 
+  arrange(desc(overall_times_sig_greater)) %>% pull(method)
+```
+
+```{r}
+#plot
+full_sample_sum_st_dev_gtex_knowledge_plot <- knowledge_gr_sample_sum_st_dev_plot_df %>% 
+  ggplot(aes(x = factor(count_sum_st_dev_group, 
+                        levels = c("[5.11e+05,3.38e+06]", "(3.38e+06,4.25e+06]",
+                                   "(4.25e+06,5.26e+06]", "(5.26e+06,6.46e+06]",
+                                   "(6.46e+06,2.12e+07]")), 
+             y = factor(method, levels = rev(gtex_knowledge_sample_sum_st_dev_plot_order)), 
+             fill = times_sig_and_greater)) +
+  scale_fill_gradient(low = "white", high = "black") +
+  labs(fill = "Times Significantly Greater") +
+  geom_tile(width = 1) +
+  scale_x_discrete(labels = c("[0.511M,\n3.38M]", "(3.38M,\n4.25M]",
+                                                      "(4.25M,\n5.26M]", "(5.26M,\n6.46M]", "(6.46M,\n21.2M]")) +
+  geom_text(aes(label = group_rank), color = "white", size = 3) +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank(),
+        axis.text.y = element_blank(),
+        legend.position = "none",
+        plot.margin = margin(5,5,5,0.5))
+```
+
+```{r}
+#labels for plot
+labels_gtex_knowledge_sample_sum_st_dev_plot <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, 
+                                 levels = rev(gtex_knowledge_sample_sum_st_dev_plot_order)), 
+             fill = value))+
+  geom_tile(color = "white", size = 1) +
+  geom_text(aes(label = value)) +
+  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
+                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
+                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
+                    "UQ" = "#238b45", "   " = "#feedde",
+                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0,5,5)) +
+  guides(fill = F)
+```
+
+```{r}
+sample_sum_st_dev_fig_knowledge <- labels_gtex_knowledge_sample_sum_st_dev_plot + full_sample_sum_st_dev_gtex_knowledge_plot + 
+  plot_layout(ncol = 2, widths = c(1,4))
+```
+
+# GTEx Naive tissue
+```{r}
+#make df for plot: sample_num | method | times significantly greater
+naive_gr_tissue_plot_df <- tibble(tissue = "kidney", method = "fake", 
+                                  times_sig_and_greater = 13)
+
+for (tis in unique(rnr$tissue)){
+  size_df <-  rnr %>% filter(tissue == tis)
+  
+  size_methods_df <- size_df %>% 
+    select(project, tissue, method, trial, sample_num, log2_auprc_over_prior) %>% 
+    spread(key = method, value = log2_auprc_over_prior) %>% 
+    select(-project, -tissue, -trial, -sample_num)
+  
+  size_times_mat <- get_times_greater_than_matrix(size_methods_df)
+  
+  size_sig_mat <- get_significance_matrix(size_df, 6, 3)
+  
+  size_summary <- get_method_times_sig_greater(size_times_mat, size_sig_mat)
+  #add group to size_summary
+  size_summary$tissue <- tis
+  
+  naive_gr_tissue_plot_df <- bind_rows(naive_gr_tissue_plot_df, size_summary)
+}
+
+naive_gr_tissue_plot_df <- naive_gr_tissue_plot_df[-1,]
+```
+
+```{r}
+#find ranks
+naive_gr_tissue_plot_df <- naive_gr_tissue_plot_df %>% 
+  group_by(tissue) %>% 
+  mutate(group_rank = rank(times_sig_and_greater, ties.method = "max"))
+naive_gr_tissue_plot_df <- naive_gr_tissue_plot_df %>% mutate(group_rank = (31-group_rank))
+#only show ranks up to 5
+naive_gr_tissue_plot_df$group_rank <- ifelse(naive_gr_tissue_plot_df$group_rank > 5,
+                                                           " ", naive_gr_tissue_plot_df$group_rank)
+```
+
+```{r}
+#get plot order
+gtex_naive_tissue_plot_order <- naive_gr_tissue_plot_df %>% 
+  group_by(method) %>% 
+  summarise(overall_times_sig_greater = sum(times_sig_and_greater)) %>% 
+  arrange(desc(overall_times_sig_greater)) %>% pull(method)
+```
+
+```{r}
+#plot
+full_tissue_gtex_naive_plot <- naive_gr_tissue_plot_df %>% 
+  ggplot(aes(x = factor(tissue), 
+             y = factor(method, levels = rev(gtex_naive_tissue_plot_order)), 
+             fill = times_sig_and_greater)) +
+  scale_fill_gradient(low = "white", high = "black") +
+  labs(fill = "Times Significantly Greater") +
+  geom_tile(width = 1) +
+  geom_text(aes(label = group_rank), color = "white", size = 3) +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank(),
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(angle = 90, hjust = 0.95, vjust = 0.25),
+        legend.position = "none",
+        plot.margin = margin(5,5,5,0.5))
+```
+
+```{r}
+#labels for plot
+labels_gtex_naive_tissue_plot <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, 
+                                 levels = rev(gtex_naive_tissue_plot_order)), 
+             fill = value))+
+  geom_tile(color = "white", size = 1) +
+  geom_text(aes(label = value)) +
+  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
+                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
+                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
+                    "UQ" = "#238b45", "   " = "#feedde",
+                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0,5,5)) +
+  guides(fill = F)
+```
+
+```{r}
+tissue_fig_naive <- labels_gtex_naive_tissue_plot + full_tissue_gtex_naive_plot + 
+  plot_layout(ncol = 2, widths = c(1,4))
+```
+
+# GTEx Knowledge tissue
+```{r}
+#make df for plot: sample_num | method | times significantly greater
+knowledge_gr_tissue_plot_df <- tibble(tissue = "kidney", method = "fake", 
+                                      times_sig_and_greater = 13)
+
+for (tis in unique(rkr$tissue)){
+  size_df <-  rkr %>% filter(tissue == tis)
+  
+  size_methods_df <- size_df %>% 
+    select(project, tissue, method, trial, sample_num, log2_auprc_over_prior) %>% 
+    spread(key = method, value = log2_auprc_over_prior) %>% 
+    select(-project, -tissue, -trial, -sample_num)
+  
+  size_times_mat <- get_times_greater_than_matrix(size_methods_df)
+  
+  size_sig_mat <- get_significance_matrix(size_df, 6, 3)
+  
+  size_summary <- get_method_times_sig_greater(size_times_mat, size_sig_mat)
+  #add group to size_summary
+  size_summary$tissue <- tis
+  
+  knowledge_gr_tissue_plot_df <- bind_rows(knowledge_gr_tissue_plot_df, size_summary)
+}
+
+knowledge_gr_tissue_plot_df <- knowledge_gr_tissue_plot_df[-1,]
+```
+
+```{r}
+#find ranks
+knowledge_gr_tissue_plot_df <- knowledge_gr_tissue_plot_df %>% 
+  group_by(tissue) %>% 
+  mutate(group_rank = rank(times_sig_and_greater, ties.method = "max"))
+knowledge_gr_tissue_plot_df <- knowledge_gr_tissue_plot_df %>% mutate(group_rank = (31-group_rank))
+#only show ranks up to 5
+knowledge_gr_tissue_plot_df$group_rank <- ifelse(knowledge_gr_tissue_plot_df$group_rank > 5,
+                                                           " ", knowledge_gr_tissue_plot_df$group_rank)
+```
+
+```{r}
+#get plot order
+gtex_knowledge_tissue_plot_order <- knowledge_gr_tissue_plot_df %>% 
+  group_by(method) %>% 
+  summarise(overall_times_sig_greater = sum(times_sig_and_greater)) %>% 
+  arrange(desc(overall_times_sig_greater)) %>% pull(method)
+```
+
+```{r}
+#plot
+full_tissue_gtex_knowledge_plot <- knowledge_gr_tissue_plot_df %>% 
+  ggplot(aes(x = factor(tissue), 
+             y = factor(method, levels = rev(gtex_knowledge_tissue_plot_order)), 
+             fill = times_sig_and_greater)) +
+  scale_fill_gradient(low = "white", high = "black") +
+  labs(fill = "Times Significantly Greater") +
+  geom_tile(width = 1) +
+  geom_text(aes(label = group_rank), color = "white", size = 3) +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank(),
+        axis.text.y = element_blank(),
+        axis.text.x = element_text(angle = 90, hjust = 0.95, vjust = 0.25),
+        legend.position = "none",
+        plot.margin = margin(5,5,5,0.5))
+```
+
+```{r}
+#labels for plot
+labels_gtex_knowledge_tissue_plot <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, 
+                                 levels = rev(gtex_knowledge_tissue_plot_order)), 
+             fill = value))+
+  geom_tile(color = "white", size = 1) +
+  geom_text(aes(label = value)) +
+  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
+                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
+                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
+                    "UQ" = "#238b45", "   " = "#feedde",
+                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0,5,5)) +
+  guides(fill = F)
+```
+
+```{r}
+tissue_fig_knowledge <- labels_gtex_knowledge_tissue_plot + full_tissue_gtex_knowledge_plot + 
+  plot_layout(ncol = 2, widths = c(1,4))
+```
+
+```{r}
+# ggsave tissue plots are width = 12, height = 8
+```
+
