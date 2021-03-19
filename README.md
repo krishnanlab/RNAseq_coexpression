@@ -124,7 +124,7 @@ This command was incorporated into a simple bash script to iterate over a direct
 
 ### wTO
 Our use of the wTO R package required that our correlation edgelist be converted to an adjacency matrix before using wTO. For speed, we used a python script developed by Anna Yannakopoulos to convert the edgelist to an adjacency matrix, then used an R script to use the wTO package and output the transformed edgelist.
-### A - edgelist to adjacency matrix
+#### A - edgelist to adjacency matrix
 __Script__:  
 
 __Required R packages__: tidyverse (CRAN)
@@ -135,7 +135,7 @@ __Arguments__:
 
 __Use from command line__: 
 
-### B - adjacency matrix to wTO edgelist
+#### B - adjacency matrix to wTO edgelist
 __Script__:  
 
 __Required R packages__: tidyverse (CRAN)
