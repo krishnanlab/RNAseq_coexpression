@@ -110,16 +110,20 @@ __Arguments__:
 
 __Use from command line__: 
 
-## Correlation calculation
+## 8. Correlation calculation
 This step requires the use of the [Sleipnir](https://functionlab.github.io/sleipnir-docs/index.html) c++ library. Once Sleipnir has been loaded, we use the following command on each individual dataset to output the network edgelist file:
+
 $ Distancer -i input_dataset.pcl -d pearson -o output_filename.dat -c -s 0 -z
+
 This command was incorporated into a simple bash script to iterate over a directory. 
 
-## Network transformation
+## 9. Network transformation
 The options are none, CLR, or wTO. If no network transformation is desired, skip this step.
 ### CLR
 CLR is another option in the [Sleipnir](https://functionlab.github.io/sleipnir-docs/index.html) c++ library. Once Sleipnir has been loaded, we use the following command on each individual dataset to output the CLR transformed network edgelist:
+
 $ Dat2Dab -i input_dataset.dat -Y -o output_file.dat
+
 This command was incorporated into a simple bash script to iterate over a directory. 
 
 ### wTO
@@ -148,6 +152,8 @@ __Use from command line__:
 
 ## Evaluation
 If desired, networks can be evaluated on the functional gold standards described in the manuscript. This requires the use of the [Sleipnir](https://functionlab.github.io/sleipnir-docs/index.html) c++ library. Once Sleipnir has been loaded, we use the following command on each individual dataset:
+
 $ DChecker -w gold_standard.dab -b 20000 -i input_network.dat -o evaluation_output.txt
+
 This command was incorporated into a simple bash script to iterate over a directory. The gold standard can be any gold standard file found in the "gold_standards" directory. The evaluation output will include the number of true positives/false positives/true negatives/false negatives at 20000 cutoffs so that auPRC, auROC, or other desired metrics can be calculated from the file.
 
