@@ -6,7 +6,9 @@ All of the scripts needed to create a coexpression network with any of our teste
 
 ## 1. Download data, get counts, CPM, RPKM, and TPM
 __Script__:  download_and_normalize.R
+
 __Required R packages__: tidyverse (CRAN), recount (Bioconductor)
+
 __Purpose__: 
 Download entire projects from the Recount2 data base and output five directories:
 - counts: count data for all datasets where the first column is 'gene' and the remaining columns are individual samples
@@ -15,23 +17,33 @@ Download entire projects from the Recount2 data base and output five directories
 - rpkm: rpkm-normalized datasetes where the first column is 'gene' and the remaining columns are individual samples
 - metadata: available metadata for all datasets
 Each remaining step of the pipeline is designed to take a directory as an argument to complete the step for every dataset in the directory, so these directories can now be put through the rest of the workflow as desired.
+
 __Arguments__:
 The single argument is a file that is used to select data for download and normalization. It has the following columns: project ID, tissue, sample ID. All metadata from Recount2 can be downloaded and filtered to create this file if using a different set of data than our provided file (see all_metadata() function from recount R package). 
+
 __Use from command line__: 
 Rscript download_and_normalize.R selected_projects-tissue-sample.tsv
 
 ## 2. Sample selection
 __Script__:  
+
 __Required R packages__: tidyverse (CRAN)
+
 __Purpose__: 
+
 __Arguments__:
+
 __Use from command line__: 
 
 ## 3. Gene filtering
 __Script__:  
+
 __Required R packages__: tidyverse (CRAN)
+
 __Purpose__: 
+
 __Arguments__:
+
 __Use from command line__: 
 
 ## 4. Within-sample normalization
@@ -42,40 +54,60 @@ The options are none, TMM, upper quartile, or quantile normalization. If no betw
 ### TMM normalization
 TMM normalization requires count data and should not be paired with CPM, RPKM, or TPM.
 __Script__:  
+
 __Required R packages__: tidyverse (CRAN)
+
 __Purpose__: 
+
 __Arguments__:
+
 __Use from command line__: 
 
 ### Upper quartile normalization
 Upper quartile normalization requires count data and should not be paired with CPM, RPKM, or TPM.
 __Script__:  
+
 __Required R packages__: tidyverse (CRAN)
+
 __Purpose__: 
+
 __Arguments__:
+
 __Use from command line__: 
 
 ### Quantile normalization
 Quantile normalization can be paired with counts, TPM, RPKM, or TPM.
 __Script__:  
+
 __Required R packages__: tidyverse (CRAN)
+
 __Purpose__: 
+
 __Arguments__:
+
 __Use from command line__: 
 
 ## 6. Gene Type Filtering
 This step is not necessary if all gene types are of interest, but the script below will retain only genes types used in our analysis (lncRNA, antisense RNA, and protein coding genes)
 __Script__:  
+
 __Required R packages__: tidyverse (CRAN)
+
 __Purpose__: 
+
 __Arguments__:
+
 __Use from command line__: 
 
 ## 7. Hyperbolic arcsine transformation
 __Script__:  
+
 __Required R packages__: tidyverse (CRAN)
+
 __Purpose__: 
+
 __Arguments__:
+
 __Use from command line__: 
 
 ## Correlation calculation
@@ -94,16 +126,24 @@ This command was incorporated into a simple bash script to iterate over a direct
 Our use of the wTO R package required that our correlation edgelist be converted to an adjacency matrix before using wTO. For speed, we used a python script developed by Anna Yannakopoulos to convert the edgelist to an adjacency matrix, then used an R script to use the wTO package and output the transformed edgelist.
 ### A - edgelist to adjacency matrix
 __Script__:  
+
 __Required R packages__: tidyverse (CRAN)
+
 __Purpose__: 
+
 __Arguments__:
+
 __Use from command line__: 
 
 ### B - adjacency matrix to wTO edgelist
 __Script__:  
+
 __Required R packages__: tidyverse (CRAN)
+
 __Purpose__: 
+
 __Arguments__:
+
 __Use from command line__: 
 
 ## Evaluation
