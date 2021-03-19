@@ -39,24 +39,75 @@ If no within-sample normalization is desired, continue the pipeline with the cou
 
 ## 5. Between-sample normalization
 The options are none, TMM, upper quartile, or quantile normalization. If no between-sample normalization is desired, skip this step. 
-### A - TMM normalization
+### TMM normalization
+TMM normalization requires count data and should not be paired with CPM, RPKM, or TPM.
 __Script__:  
 __Required R packages__: tidyverse (CRAN)
 __Purpose__: 
 __Arguments__:
 __Use from command line__: 
 
-### B - upper quartile normalization
+### Upper quartile normalization
+Upper quartile normalization requires count data and should not be paired with CPM, RPKM, or TPM.
 __Script__:  
 __Required R packages__: tidyverse (CRAN)
 __Purpose__: 
 __Arguments__:
 __Use from command line__: 
 
-### C - quantile normalization
+### Quantile normalization
+Quantile normalization can be paired with counts, TPM, RPKM, or TPM.
 __Script__:  
 __Required R packages__: tidyverse (CRAN)
 __Purpose__: 
 __Arguments__:
 __Use from command line__: 
+
+## 6. Gene Type Filtering
+This step is not necessary if all gene types are of interest, but the script below will retain only genes types used in our analysis (lncRNA, antisense RNA, and protein coding genes)
+__Script__:  
+__Required R packages__: tidyverse (CRAN)
+__Purpose__: 
+__Arguments__:
+__Use from command line__: 
+
+## 7. Hyperbolic arcsine transformation
+__Script__:  
+__Required R packages__: tidyverse (CRAN)
+__Purpose__: 
+__Arguments__:
+__Use from command line__: 
+
+## Correlation calculation
+This step requires the use of the [Sleipnir](https://functionlab.github.io/sleipnir-docs/index.html) c++ library. Once Sleipnir has been loaded, we use the following command on each individual dataset to output the network edgelist file:
+$ Distancer -i input_dataset.pcl -d pearson -o output_filename.dat -c -s 0 -z
+This command was incorporated into a simple bash script to iterate over a directory. 
+
+## Network transformation
+The options are none, CLR, or wTO. If no network transformation is desired, skip this step.
+### CLR
+CLR is another option in the [Sleipnir](https://functionlab.github.io/sleipnir-docs/index.html) c++ library. Once Sleipnir has been loaded, we use the following command on each individual dataset to output the CLR transformed network edgelist:
+$ Dat2Dab -i input_dataset.dat -Y -o output_file.dat
+This command was incorporated into a simple bash script to iterate over a directory. 
+
+### wTO
+Our use of the wTO R package required that our correlation edgelist be converted to an adjacency matrix before using wTO. For speed, we used a python script developed by Anna Yannakopoulos to convert the edgelist to an adjacency matrix, then used an R script to use the wTO package and output the transformed edgelist.
+### A - edgelist to adjacency matrix
+__Script__:  
+__Required R packages__: tidyverse (CRAN)
+__Purpose__: 
+__Arguments__:
+__Use from command line__: 
+
+### B - adjacency matrix to wTO edgelist
+__Script__:  
+__Required R packages__: tidyverse (CRAN)
+__Purpose__: 
+__Arguments__:
+__Use from command line__: 
+
+## Evaluation
+If desired, networks can be evaluated on the functional gold standards described in the manuscript. This requires the use of the [Sleipnir](https://functionlab.github.io/sleipnir-docs/index.html) c++ library. Once Sleipnir has been loaded, we use the following command on each individual dataset:
+$ DChecker -w gold_standard.dab -b 20000 -i input_network.dat -o evaluation_output.txt
+This command was incorporated into a simple bash script to iterate over a directory. The gold standard can be any gold standard file found in the "gold_standards" directory. The evaluation output will include the number of true positives/false positives/true negatives/false negatives at 20000 cutoffs so that auPRC, auROC, or other desired metrics can be calculated from the file.
 
