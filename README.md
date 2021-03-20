@@ -144,25 +144,30 @@ Our use of the wTO R package required that our correlation edgelist be converted
 
 #### A - edgelist to adjacency matrix
 
-__Script__:  
+__Script__: Edgelist_to_matrix.py (python 3)
 
-__Purpose__: 
+__Purpose__: Take an edgelist and turn to an adjacency matrix and nodelist for the adjacency matrix
 
-__Arguments__:
+__Arguments__: 
+- dir1 = the directory that the intial edgelist is in  
+- edgelist = file in dir1 that should be converted to an adjacency matrix
+- dir2 = the directory that the output adjacency matrices and nodelists should be saved to       
+- binary = flag that can be used to output a binary rather than weighted adjacency matrix
+- diags = what diagonals should be in the adjacency matrix (default = 0)
 
-__Use from command line__: 
+__Use from command line__: python Edgelist_to_matrix.py -dir1 path/input_directory -dir2 path/output_directory -edgelist edgelist_filename.tsv
 
 #### B - adjacency matrix to wTO edgelist
 
-__Script__:  
+__Script__:  edgelist_to_wTO_edgelist.R
 
-__Required R packages__: [tidyverse](https://www.tidyverse.org/), 
+__Required R packages__: [tidyverse](https://www.tidyverse.org/), [wTO](https://cran.r-project.org/web/packages/wTO/)
 
-__Purpose__: 
+__Purpose__: wTO tranform the network edges.
 
-__Arguments__:
+__Arguments__: The first argument is the path to the directory that output files should be placed in. The second argument is the path to the adjacency matrix output by Edgelist_to_matrix.py. The third argument is the path to the nodelist output by Edgelist_to_matrix.py.
 
-__Use from command line__: 
+__Use from command line__: Rscript edgelist_to_wTO_edgelist.R path/output_directory adjacency_matrix_file.txt nodelist_file.nodelist
 
 ## Evaluation
 If desired, networks can be evaluated on the functional gold standards described in the manuscript. This requires the use of the [Sleipnir](https://functionlab.github.io/sleipnir-docs/index.html) c++ library. Once Sleipnir has been loaded, we use the following command on each individual dataset:
@@ -172,7 +177,7 @@ $ DChecker -w gold_standard.dab -b 20000 -i input_network.dat -o evaluation_outp
 This command was incorporated into a simple bash script to iterate over a directory. The gold standard can be any gold standard file found in the "gold_standards" directory. The evaluation output will include the number of true positives/false positives/true negatives/false negatives at 20000 cutoffs so that auPRC, auROC, or other desired metrics can be calculated from the file. In our analysis, the R package [pracma](https://cran.r-project.org/web/packages/pracma/index.html) was used to calculate the area under the precision-recall curve and the area under the ROC curve.
 
 ## Data Transformations
-VST and rlog are the data transformations we tested to compare to the hyperbolic arcsine transformation. Both transformations can only be used with count data. We perform sample selection and gene filtering by cpm before doing the transformation, then correlation calculation can be performed to build the network. Network transformation can still be done if desired. 
+VST and rlog are the data transformations we tested to compare to the hyperbolic arcsine transformation. Both transformations can only be used with count data. We perform sample selection and gene filtering by cpm before doing the transformation, then gene type filtering followed by correlation calculation can be performed to build the network. Network transformation can still be done if desired. 
 
 ### VST
 
