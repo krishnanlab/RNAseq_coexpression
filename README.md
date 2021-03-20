@@ -9,7 +9,7 @@ The "docs" and "website" directories are only related to the extra results websi
 ## 1. Download data, get counts, CPM, RPKM, and TPM
 __Script__:  download_and_normalize.R
 
-__Required R packages__: tidyverse (CRAN), recount (Bioconductor)
+__Required R packages__: [tidyverse](https://www.tidyverse.org/), [recount](https://bioconductor.org/packages/release/bioc/html/recount.html)
 
 __Purpose__: 
 Download entire projects from the Recount2 data base and output five directories:
@@ -32,7 +32,7 @@ We have modified the download_and_normalize.R script to only download the data t
 
 __Script__: sample_filter.R
 
-__Required R packages__: tidyverse (CRAN)
+__Required R packages__: [tidyverse](https://www.tidyverse.org/)
 
 __Purpose__: Removes samples from each dataset that have over half zero-expression for lncRNA, antisense RNA, and protein coding genes.
 
@@ -44,11 +44,11 @@ __Use from command line__: Rscript sample_filter.R path/directory_to_be_sample_f
 
 __Script__:  gene_filtering_by_cpm.R
 
-__Required R packages__: tidyverse (CRAN)
+__Required R packages__: [tidyverse](https://www.tidyverse.org/)
 
 __Purpose__: Remove genes which have universally low expression
 
-__Arguments__: The first argument is the path to the directory of datasets to be gene filtered. The decond argument is the path to the file that contains the genes to keep. To repeat our analysis with the SRA genes, use "SRA_genes_to_keep_by_cpm_filter.txt" in the data directory. To repeat our analysis with the GTEx genes, use "GTEx_genes_to_keep_by_cpm_filter.txt" in the data directory. 
+__Arguments__: The first argument is the path to the directory of datasets to be gene filtered. The second argument is the path to the file that contains the genes to keep. To repeat our analysis with the SRA genes, use "SRA_genes_to_keep_by_cpm_filter.txt" in the data directory. To repeat our analysis with the GTEx genes, use "GTEx_genes_to_keep_by_cpm_filter.txt" in the data directory. 
 
 __Use from command line__: Rscript gene_filtering_by_cpm.R path/directory_to_be_gene_filtered path/genes_to_keep_file.txt
 
@@ -60,63 +60,67 @@ The options are none, TMM, upper quartile, or quantile normalization. If no betw
 
 ### TMM normalization
 TMM normalization requires count data and should not be paired with CPM, RPKM, or TPM.
-__Script__:  
 
-__Required R packages__: tidyverse (CRAN)
+__Script__: TMM_normalize.R
 
-__Purpose__: 
+__Required R packages__: [tidyverse](https://www.tidyverse.org/), [edgeR](https://bioconductor.org/packages/release/bioc/html/edgeR.html)
 
-__Arguments__:
+__Purpose__: TMM normalize each dataset in a directory.
 
-__Use from command line__: 
+__Arguments__: Path to directory of datasets to be TMM normalized.
+
+__Use from command line__: Rscript TMM_normalize.R path/directory_to_be_normalized
 
 ### Upper quartile normalization
 Upper quartile normalization requires count data and should not be paired with CPM, RPKM, or TPM.
-__Script__:  
 
-__Required R packages__: tidyverse (CRAN)
+__Script__: upper_quartile_normalize.R
 
-__Purpose__: 
+__Required R packages__: [tidyverse](https://www.tidyverse.org/), [edgeR](https://bioconductor.org/packages/release/bioc/html/edgeR.html)
 
-__Arguments__:
+__Purpose__: Upper quartile normalize each dataset in a directory.
 
-__Use from command line__: 
+__Arguments__: Path to directory of datasets to be upper quartile normalized.
+
+__Use from command line__: Rscript upper_quartile_normalize.R path/directory_to_be_normalized
 
 ### Quantile normalization
 Quantile normalization can be paired with counts, TPM, RPKM, or TPM.
-__Script__:  
 
-__Required R packages__: tidyverse (CRAN)
+__Script__: quantile_normalize.R
 
-__Purpose__: 
+__Required R packages__: [tidyverse](https://www.tidyverse.org/), [preprocessCore](https://bioconductor.org/packages/release/bioc/html/preprocessCore.html)
 
-__Arguments__:
+__Purpose__: Quantile normalize each dataset in a directory.
 
-__Use from command line__: 
+__Arguments__: Path to directory of datasets to be quantile normalized.
+
+__Use from command line__: Rscript quantile_normalize.R path/directory_to_be_normalized
 
 ## 6. Gene Type Filtering
 This step is not necessary if all gene types are of interest, but the script below will retain only genes types used in our analysis (lncRNA, antisense RNA, and protein coding genes)
 
-__Script__:  
+__Script__: gene_type_filter_lncrna_antirna_proteincoding.R
 
-__Required R packages__: tidyverse (CRAN)
+__Required R packages__: [tidyverse](https://www.tidyverse.org/)
 
-__Purpose__: 
+__Purpose__: Remove all gene types that are not lncRNA, antisense RNA, or protein coding.
 
-__Arguments__:
+__Arguments__: Path to directory of datasets to be gene type filtered.
 
-__Use from command line__: 
+__Use from command line__: Rscript gene_type_filter_lncrna_antirna_proteincoding.R path/directory_to_be_gene-type_filtered
 
 ## 7. Hyperbolic arcsine transformation
-__Script__:  
 
-__Required R packages__: tidyverse (CRAN)
+__Script__: asinh_transform.R
 
-__Purpose__: 
+__Required R packages__: [tidyverse](https://www.tidyverse.org/)
 
-__Arguments__:
+__Purpose__: Transform data with hyperbolic arcsine function. 
 
-__Use from command line__: 
+__Arguments__: Path to directory of datasets to be transformed.
+
+__Use from command line__: Rscript asinh_transform.R path/directory_to_be_transformed
 
 ## 8. Correlation calculation
 This step requires the use of the [Sleipnir](https://functionlab.github.io/sleipnir-docs/index.html) c++ library. Once Sleipnir has been loaded, we use the following command on each individual dataset to output the network edgelist file:
@@ -136,12 +140,11 @@ $ Dat2Dab -i input_dataset.dat -Y -o output_file.dat
 This command was incorporated into a simple bash script to iterate over a directory. 
 
 ### wTO
-Our use of the wTO R package required that our correlation edgelist be converted to an adjacency matrix before using wTO. For speed, we used a python script developed by Anna Yannakopoulos to convert the edgelist to an adjacency matrix, then used an R script to use the wTO package and output the transformed edgelist.
+Our use of the wTO R package required that our correlation edgelist be converted to an adjacency matrix before using wTO. For speed, we used a python script to convert the edgelist to an adjacency matrix, then used an R script to use the wTO package and output the transformed edgelist.
+
 #### A - edgelist to adjacency matrix
 
 __Script__:  
-
-__Required R packages__: tidyverse (CRAN)
 
 __Purpose__: 
 
@@ -153,7 +156,7 @@ __Use from command line__:
 
 __Script__:  
 
-__Required R packages__: tidyverse (CRAN)
+__Required R packages__: [tidyverse](https://www.tidyverse.org/), 
 
 __Purpose__: 
 
@@ -166,5 +169,31 @@ If desired, networks can be evaluated on the functional gold standards described
 
 $ DChecker -w gold_standard.dab -b 20000 -i input_network.dat -o evaluation_output.txt
 
-This command was incorporated into a simple bash script to iterate over a directory. The gold standard can be any gold standard file found in the "gold_standards" directory. The evaluation output will include the number of true positives/false positives/true negatives/false negatives at 20000 cutoffs so that auPRC, auROC, or other desired metrics can be calculated from the file.
+This command was incorporated into a simple bash script to iterate over a directory. The gold standard can be any gold standard file found in the "gold_standards" directory. The evaluation output will include the number of true positives/false positives/true negatives/false negatives at 20000 cutoffs so that auPRC, auROC, or other desired metrics can be calculated from the file. In our analysis, the R package [pracma](https://cran.r-project.org/web/packages/pracma/index.html) was used to calculate the area under the precision-recall curve and the area under the ROC curve.
 
+## Data Transformations
+VST and rlog are the data transformations we tested to compare to the hyperbolic arcsine transformation. Both transformations can only be used with count data. We perform sample selection and gene filtering by cpm before doing the transformation, then correlation calculation can be performed to build the network. Network transformation can still be done if desired. 
+
+### VST
+
+__Script__:  vst_transform.R
+
+__Required R packages__: [tidyverse](https://www.tidyverse.org/), [DESeq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html)
+
+__Purpose__: VST transform each dataset in a directory.
+
+__Arguments__: Path to directory of datasets to be transformed.
+
+__Use from command line__: Rscript vst_transform.R path/directory_to_be_transformed
+
+### rlog
+
+__Script__:  rlog_transform.R
+
+__Required R packages__: [tidyverse](https://www.tidyverse.org/), [DESeq2](https://bioconductor.org/packages/release/bioc/html/DESeq2.html)
+
+__Purpose__: rlog transform each dataset in a directory.
+
+__Arguments__: Path to directory of datasets to be transformed.
+
+__Use from command line__: Rscript rlog_transform.R path/directory_to_be_transformed
