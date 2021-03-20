@@ -11,11 +11,12 @@ __Required R packages__: tidyverse (CRAN), recount (Bioconductor)
 
 __Purpose__: 
 Download entire projects from the Recount2 data base and output five directories:
-- counts: count data for all datasets where the first column is 'gene' and the remaining columns are individual samples
-- cpm: cpm-normalized datasets where the first column is 'gene' and the remaining columns are individual samples
-- tpm: tpm-normalized datasets where the first column is 'gene' and the remaining columns are individual samples
-- rpkm: rpkm-normalized datasetes where the first column is 'gene' and the remaining columns are individual samples
+- counts: count data for all datasets where the first column in each file is 'gene' and the remaining columns are individual samples 
+- cpm: cpm-normalized datasets where the first column in each file is 'gene' and the remaining columns are individual samples
+- tpm: tpm-normalized datasets where the first column in each file is 'gene' and the remaining columns are individual samples
+- rpkm: rpkm-normalized datasetes where the first column in each file is 'gene' and the remaining columns are individual samples
 - metadata: available metadata for all datasets
+- rse: the Rdata object for each dataset
 Each remaining step of the pipeline is designed to take a directory as an argument to complete the step for every dataset in the directory, so these directories can now be put through the rest of the workflow as desired.
 
 __Arguments__:
