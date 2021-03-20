@@ -2,7 +2,9 @@
 This is the GitHub repository for reproducing networks and results from our manuscript "Robust normalization and transformation techniques for constructing gene coexpression networks from RNA-seq data" which can be found here. The website containing extra results and figures from our analysis can be found here. 
 
 # Code
-All of the scripts needed to create a coexpression network with any of our tested workflows can be found in the "source_code" directory. Most scripts are R scripts and are described below. Some scripts have accompanying data files in the "data" directory that can be used to reproduce our workflow, or can be replaced with custom files to use our workflow with your own data. Calculating the pearson correlations to build the network, the network transformations, and evaluation requires installation of the c++ library, Sleipnir. The naive and tissue-aware gold standards we used for evaluation can be found in the "gold_standards" directory.
+The scripts needed to create a coexpression network with any of our tested workflows can be found in the "src" directory. Most scripts are R scripts and are described below. Some scripts have accompanying data files in the "data" directory that can be used to reproduce our workflow, but can be replaced with custom files to use our workflow with your own data. Calculating the pearson correlations to build the network, the network transformations, and evaluation requires installation of the c++ library, Sleipnir. The naive and tissue-aware gold standards we used for evaluation can be found in the "gold_standards" directory.
+
+The "docs" and "website" directories are only related to the extra results website (linked above) and nothing should be pulled from these directories for reproduction or use of our workflow.
 
 ## 1. Download data, get counts, CPM, RPKM, and TPM
 __Script__:  download_and_normalize.R
@@ -20,38 +22,42 @@ Download entire projects from the Recount2 data base and output five directories
 Each remaining step of the pipeline is designed to take a directory as an argument to complete the step for every dataset in the directory, so these directories can now be put through the rest of the workflow as desired.
 
 __Arguments__:
-The single argument is a file that is used to select data for download and normalization. It has the following columns: project ID, tissue, sample ID. All metadata from Recount2 can be downloaded and filtered to create this file if using a different set of data than our provided file (see all_metadata() function from recount R package). 
+The single argument is the path to a file that is used to select data for download and normalization. We created this file using the Recount2 metadata that can be accessed with the all_metadata function in the recount R package. The metadata was filtered for our desired characteristics and the following columns were selected to write to file: project, sample, run, sharq_beta_tissue.
 
 __Use from command line__: 
 Rscript download_and_normalize.R selected_projects-tissue-sample.tsv
 
 ## 2. Sample selection
-__Script__:  
+We have modified the download_and_normalize.R script to only download the data that met our criteria, so this step can be skipped to repeat our analysis. If other data is being used, this step can be executed to filter out samples that have over half zero-expression for lncRNA, antisense RNA, and protein coding genes.
+
+__Script__: sample_filter.R
 
 __Required R packages__: tidyverse (CRAN)
 
-__Purpose__: 
+__Purpose__: Removes samples from each dataset that have over half zero-expression for lncRNA, antisense RNA, and protein coding genes.
 
-__Arguments__:
+__Arguments__: Path to directory of datasets to be sample filtered.
 
-__Use from command line__: 
+__Use from command line__: Rscript sample_filter.R path/directory_to_be_sample_filtered
 
 ## 3. Gene filtering
-__Script__:  
+
+__Script__:  gene_filtering_by_cpm.R
 
 __Required R packages__: tidyverse (CRAN)
 
-__Purpose__: 
+__Purpose__: Remove genes which have universally low expression
 
-__Arguments__:
+__Arguments__: The first argument is the path to the directory of datasets to be gene filtered. The decond argument is the path to the file that contains the genes to keep. To repeat our analysis with the SRA genes, use "SRA_genes_to_keep_by_cpm_filter.txt" in the data directory. To repeat our analysis with the GTEx genes, use "GTEx_genes_to_keep_by_cpm_filter.txt" in the data directory. 
 
-__Use from command line__: 
+__Use from command line__: Rscript gene_filtering_by_cpm.R path/directory_to_be_gene_filtered path/genes_to_keep_file.txt
 
 ## 4. Within-sample normalization
 If no within-sample normalization is desired, continue the pipeline with the counts directory that has been through any necessary sample selection and gene filtering. Choosing CPM, RPKM, or TPM requires the use of the CPM, RPKM, or TPM directories that have been sample and/or gene filtered as necessary.
 
 ## 5. Between-sample normalization
 The options are none, TMM, upper quartile, or quantile normalization. If no between-sample normalization is desired, skip this step. 
+
 ### TMM normalization
 TMM normalization requires count data and should not be paired with CPM, RPKM, or TPM.
 __Script__:  
@@ -90,6 +96,7 @@ __Use from command line__:
 
 ## 6. Gene Type Filtering
 This step is not necessary if all gene types are of interest, but the script below will retain only genes types used in our analysis (lncRNA, antisense RNA, and protein coding genes)
+
 __Script__:  
 
 __Required R packages__: tidyverse (CRAN)
@@ -120,6 +127,7 @@ This command was incorporated into a simple bash script to iterate over a direct
 
 ## 9. Network transformation
 The options are none, CLR, or wTO. If no network transformation is desired, skip this step.
+
 ### CLR
 CLR is another option in the [Sleipnir](https://functionlab.github.io/sleipnir-docs/index.html) c++ library. Once Sleipnir has been loaded, we use the following command on each individual dataset to output the CLR transformed network edgelist:
 
@@ -130,6 +138,7 @@ This command was incorporated into a simple bash script to iterate over a direct
 ### wTO
 Our use of the wTO R package required that our correlation edgelist be converted to an adjacency matrix before using wTO. For speed, we used a python script developed by Anna Yannakopoulos to convert the edgelist to an adjacency matrix, then used an R script to use the wTO package and output the transformed edgelist.
 #### A - edgelist to adjacency matrix
+
 __Script__:  
 
 __Required R packages__: tidyverse (CRAN)
@@ -141,6 +150,7 @@ __Arguments__:
 __Use from command line__: 
 
 #### B - adjacency matrix to wTO edgelist
+
 __Script__:  
 
 __Required R packages__: tidyverse (CRAN)
