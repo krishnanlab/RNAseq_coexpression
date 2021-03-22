@@ -183,7 +183,7 @@ overall_log2_auprc_prior_knowledge_plot <- gkr %>%
 overall_l2_labels <- method_codes %>% 
   ggplot(aes(x = key, y = factor(method, levels = overall_l2_order), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
-  #geom_text(aes(label = value)) +
+  geom_text(aes(label = value)) +
   scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
                     "RPKM" = "#6baed6", "TPM" = "#2171b5",
                     "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
@@ -196,7 +196,6 @@ overall_l2_labels <- method_codes %>%
         axis.ticks = element_blank(),
         axis.title = element_blank(),
         plot.margin = margin(5,0.5,5,0.5)) +
-  geom_fit_text() +
   guides(fill = F)
 ```
 
@@ -254,7 +253,7 @@ overall_auroc_knowledge_plot <- gkr %>%
 overall_auroc_labels <- method_codes %>% 
   ggplot(aes(x = key, y = factor(method, levels = overall_auroc_order), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
-  #geom_text(aes(label = value)) +
+  geom_text(aes(label = value)) +
   scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
                     "RPKM" = "#6baed6", "TPM" = "#2171b5",
                     "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
@@ -267,7 +266,6 @@ overall_auroc_labels <- method_codes %>%
         axis.ticks = element_blank(),
         axis.title = element_blank(),
         plot.margin = margin(5,0.5,5,0.5)) +
-  geom_fit_text() +
   guides(fill = F)
 ```
 
@@ -326,7 +324,7 @@ overall_pr_knowledge_plot <- gkpr %>%
 overall_pr_labels <- method_codes %>% 
   ggplot(aes(x = key, y = factor(method, levels = overall_pr_order), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
-  #geom_text(aes(label = value)) +
+  geom_text(aes(label = value)) +
   scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
                     "RPKM" = "#6baed6", "TPM" = "#2171b5",
                     "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
@@ -339,7 +337,6 @@ overall_pr_labels <- method_codes %>%
         axis.ticks = element_blank(),
         axis.title = element_blank(),
         plot.margin = margin(5,0.5,5,0.5)) +
-  geom_fit_text() +
   guides(fill = F)
 ```
 

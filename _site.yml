@@ -8,6 +8,9 @@ navbar:
       href: sra_plots.html
     - text: "GTEx Resampling"
       href: gtex_resampling_plots.html
+    - text: "Data Transformation"
+      href: data_transformation_plots.html
+      
 output_dir: "docs"
 output:
   html_document:

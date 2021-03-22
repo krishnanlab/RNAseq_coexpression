@@ -104,7 +104,7 @@ overall_5_knowledge_plot <- rkr %>%
 overall_5_labels <- method_codes %>% 
   ggplot(aes(x = key, y = factor(method, levels = overall_5_order), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
-  #geom_text(aes(label = value)) +
+  geom_text(aes(label = value)) +
   scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
                     "RPKM" = "#6baed6", "TPM" = "#2171b5",
                     "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
@@ -117,7 +117,6 @@ overall_5_labels <- method_codes %>%
         axis.ticks = element_blank(),
         axis.title = element_blank(),
         plot.margin = margin(5,0.5,5,0.5)) +
-  geom_fit_text() +
   guides(fill = F)
 ```
 
@@ -182,7 +181,7 @@ overall_6_knowledge_plot <- rkr %>%
 overall_6_labels <- method_codes %>% 
   ggplot(aes(x = key, y = factor(method, levels = overall_6_order), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
-  #geom_text(aes(label = value)) +
+  geom_text(aes(label = value)) +
   scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
                     "RPKM" = "#6baed6", "TPM" = "#2171b5",
                     "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
@@ -195,7 +194,6 @@ overall_6_labels <- method_codes %>%
         axis.ticks = element_blank(),
         axis.title = element_blank(),
         plot.margin = margin(5,0.5,5,0.5)) +
-  geom_fit_text() +
   guides(fill = F)
 ```
 
@@ -260,7 +258,7 @@ overall_7_knowledge_plot <- rkr %>%
 overall_7_labels <- method_codes %>% 
   ggplot(aes(x = key, y = factor(method, levels = overall_7_order), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
-  #geom_text(aes(label = value)) +
+  geom_text(aes(label = value)) +
   scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
                     "RPKM" = "#6baed6", "TPM" = "#2171b5",
                     "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
@@ -273,7 +271,6 @@ overall_7_labels <- method_codes %>%
         axis.ticks = element_blank(),
         axis.title = element_blank(),
         plot.margin = margin(5,0.5,5,0.5)) +
-  geom_fit_text() +
   guides(fill = F)
 ```
 
@@ -338,7 +335,7 @@ overall_9_knowledge_plot <- rkr %>%
 overall_9_labels <- method_codes %>% 
   ggplot(aes(x = key, y = factor(method, levels = overall_9_order), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
-  #geom_text(aes(label = value)) +
+  geom_text(aes(label = value)) +
   scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
                     "RPKM" = "#6baed6", "TPM" = "#2171b5",
                     "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
@@ -351,7 +348,6 @@ overall_9_labels <- method_codes %>%
         axis.ticks = element_blank(),
         axis.title = element_blank(),
         plot.margin = margin(5,0.5,5,0.5)) +
-  geom_fit_text() +
   guides(fill = F)
 ```
 
@@ -416,7 +412,7 @@ overall_11_knowledge_plot <- rkr %>%
 overall_11_labels <- method_codes %>% 
   ggplot(aes(x = key, y = factor(method, levels = overall_11_order), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
-  #geom_text(aes(label = value)) +
+  geom_text(aes(label = value)) +
   scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
                     "RPKM" = "#6baed6", "TPM" = "#2171b5",
                     "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
@@ -429,7 +425,6 @@ overall_11_labels <- method_codes %>%
         axis.ticks = element_blank(),
         axis.title = element_blank(),
         plot.margin = margin(5,0.5,5,0.5)) +
-  geom_fit_text() +
   guides(fill = F)
 ```
 
@@ -494,7 +489,7 @@ overall_13_knowledge_plot <- rkr %>%
 overall_13_labels <- method_codes %>% 
   ggplot(aes(x = key, y = factor(method, levels = overall_13_order), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
-  #geom_text(aes(label = value)) +
+  geom_text(aes(label = value)) +
   scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
                     "RPKM" = "#6baed6", "TPM" = "#2171b5",
                     "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
@@ -507,7 +502,6 @@ overall_13_labels <- method_codes %>%
         axis.ticks = element_blank(),
         axis.title = element_blank(),
         plot.margin = margin(5,0.5,5,0.5)) +
-  geom_fit_text() +
   guides(fill = F)
 ```
 
@@ -572,7 +566,7 @@ overall_16_knowledge_plot <- rkr %>%
 overall_16_labels <- method_codes %>% 
   ggplot(aes(x = key, y = factor(method, levels = overall_16_order), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
-  #geom_text(aes(label = value)) +
+  geom_text(aes(label = value)) +
   scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
                     "RPKM" = "#6baed6", "TPM" = "#2171b5",
                     "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
@@ -585,7 +579,6 @@ overall_16_labels <- method_codes %>%
         axis.ticks = element_blank(),
         axis.title = element_blank(),
         plot.margin = margin(5,0.5,5,0.5)) +
-  geom_fit_text() +
   guides(fill = F)
 ```
 
@@ -651,7 +644,7 @@ overall_25_knowledge_plot <- rkr %>%
 overall_25_labels <- method_codes %>% 
   ggplot(aes(x = key, y = factor(method, levels = overall_25_order), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
-  #geom_text(aes(label = value)) +
+  geom_text(aes(label = value)) +
   scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
                     "RPKM" = "#6baed6", "TPM" = "#2171b5",
                     "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
@@ -664,7 +657,6 @@ overall_25_labels <- method_codes %>%
         axis.ticks = element_blank(),
         axis.title = element_blank(),
         plot.margin = margin(5,0.5,5,0.5)) +
-  geom_fit_text() +
   guides(fill = F)
 ```
 
@@ -730,7 +722,7 @@ overall_40_knowledge_plot <- rkr %>%
 overall_40_labels <- method_codes %>% 
   ggplot(aes(x = key, y = factor(method, levels = overall_40_order), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
-  #geom_text(aes(label = value)) +
+  geom_text(aes(label = value)) +
   scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
                     "RPKM" = "#6baed6", "TPM" = "#2171b5",
                     "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
@@ -743,7 +735,6 @@ overall_40_labels <- method_codes %>%
         axis.ticks = element_blank(),
         axis.title = element_blank(),
         plot.margin = margin(5,0.5,5,0.5)) +
-  geom_fit_text() +
   guides(fill = F)
 ```
 
