@@ -29,8 +29,7 @@ skr <- read_delim("./data/2020-03-19_sra_knowledge_results.txt",
 skpr <- read_delim("./data/2020-03-19_prec_recall_sra_knowledge_results.txt",
                    delim = "\t", col_names = T) %>% 
   filter(recall == 20)
-method_codes <- read_delim("./data/2020-03-19_method_codes.txt",
-                           delim = "\t", col_names = T)
+method_codes <- read.delim("./data/2020-03-19_method_codes.txt", sep = "\t")
 
 snr$method <- gsub("quantile", "QNT", snr$method)
 snr$method <- gsub("wTO", "WTO", snr$method)
@@ -238,7 +237,7 @@ overall_log2_auprc_prior_knowledge_plot <- skr %>%
 overall_l2_labels <- method_codes %>% 
   ggplot(aes(x = key, y = factor(method, levels = overall_l2_order), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
-  geom_text(aes(label = value)) +
+  #geom_text(aes(label = value)) +
   scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
                     "RPKM" = "#6baed6", "TPM" = "#2171b5",
                     "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
@@ -251,7 +250,8 @@ overall_l2_labels <- method_codes %>%
         axis.ticks = element_blank(),
         axis.title = element_blank(),
         plot.margin = margin(5,0.5,5,0.5)) +
-  guides(fill = F)
+  guides(fill = F) +
+  geom_fit_text()
 ```
 
 ```{r echo=FALSE, fig.cap="**Overall performance of workflows.** The plots show the aggregate accuracy of all SRA coexpression networks resulting from each individual workflow evaluated using the (**left**) tissue-naive and (**right**) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(auPRC/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(auPRC/prior) for the tissue-naive data.", out.width="100%"}
@@ -311,7 +311,7 @@ overall_auroc_knowledge_plot <- skr %>%
 overall_auroc_labels <- method_codes %>% 
   ggplot(aes(x = key, y = factor(method, levels = overall_auroc_order), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
-  geom_text(aes(label = value)) +
+  #geom_text(aes(label = value)) +
   scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
                     "RPKM" = "#6baed6", "TPM" = "#2171b5",
                     "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
@@ -324,7 +324,8 @@ overall_auroc_labels <- method_codes %>%
         axis.ticks = element_blank(),
         axis.title = element_blank(),
         plot.margin = margin(5,0.5,5,0.5)) +
-  guides(fill = F)
+  guides(fill = F) +
+  geom_fit_text()
 ```
 
 ```{r echo=FALSE, fig.cap="**Overall performance of workflows.** The plots show the aggregate accuracy of all SRA coexpression networks resulting from each individual workflow evaluated using the (**left**) tissue-naive and (**right**) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the auROC of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median auROC for the tissue-naive data.", out.width="100%"}
@@ -384,7 +385,7 @@ overall_pr_knowledge_plot <- skpr %>%
 overall_pr_labels <- method_codes %>% 
   ggplot(aes(x = key, y = factor(method, levels = overall_pr_order), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
-  geom_text(aes(label = value)) +
+  #geom_text(aes(label = value)) +
   scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
                     "RPKM" = "#6baed6", "TPM" = "#2171b5",
                     "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
@@ -397,7 +398,8 @@ overall_pr_labels <- method_codes %>%
         axis.ticks = element_blank(),
         axis.title = element_blank(),
         plot.margin = margin(5,0.5,5,0.5)) +
-  guides(fill = F)
+  guides(fill = F) +
+  geom_fit_text()
 ```
 
 ```{r echo=FALSE, fig.cap="**Overall performance of workflows.** The plots show the aggregate accuracy of all SRA coexpression networks resulting from each individual workflow evaluated using the (**left**) tissue-naive and (**right**) tissue-aware gold standards. The workflows (rows) are described in terms of the specific method used in the within-sample normalization (blues), between-sample normalization (greens), and network transformation (oranges) stages. The performance of each workflow is presented as boxplots that summarizes the log2(p20r/prior) of each workflow where auPRC is the area under the precision recall curve. The workflows are ordered by their median log2(p20r/prior) for the tissue-naive data.", out.width="100%"}
