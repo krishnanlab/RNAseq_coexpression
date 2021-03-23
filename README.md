@@ -7,6 +7,8 @@ The scripts needed to create a coexpression network with any of our tested workf
 The "docs" and "website" directories are only related to the extra results website (linked above) and nothing should be pulled from these directories for reproduction or use of our workflow.
 
 ## 1. Download data, get counts, CPM, RPKM, and TPM
+To download the GTEx dataset, use the gtex_download_and_normalize.R. It will read a file from data but requires no arguments. Otherwise, see below.
+
 __Script__:  download_and_normalize.R
 
 __Required R packages__: [tidyverse](https://www.tidyverse.org/), [recount](https://bioconductor.org/packages/release/bioc/html/recount.html)
