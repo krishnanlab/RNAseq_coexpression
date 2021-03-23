@@ -920,7 +920,7 @@ Sample size refers to the number of samples used to create a network. Each barpl
 
 ### Tissue-naive Standard
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_auprc_prior_ss_cors <- snr %>% 
   group_by(method) %>% 
   summarise(correlation = cor(log2_auprc_over_prior, sample_num, method = "spearman")) %>% 
@@ -941,7 +941,7 @@ l2_auprc_prior_ss_cors %>%
 
 ### Tissue-aware Standard
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_auprc_prior_ss_cors_ts <- skr %>% 
   group_by(method) %>% 
   summarise(correlation = cor(log2_auprc_over_prior, sample_num, method = "spearman")) %>% 
@@ -964,7 +964,7 @@ l2_auprc_prior_ss_cors_ts %>%
 
 ### Tissue-naive Standard
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_auroc_ss_cors <- snr %>% 
   group_by(method) %>% 
   summarise(correlation = cor(auROC, sample_num, method = "spearman")) %>% 
@@ -985,7 +985,7 @@ l2_auroc_ss_cors %>%
 
 ### Tissue-aware Standard
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_auroc_ss_cors_ts <- skr %>% 
   group_by(method) %>% 
   summarise(correlation = cor(auROC, sample_num, method = "spearman")) %>% 
@@ -1016,7 +1016,7 @@ lrg_skpr <- left_join(skpr, tmp, by = "dataset")
 
 ### Tissue-naive Standard
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_prec_at_recall20_ss_cors <- lrg_snpr %>% 
   group_by(method) %>% 
   summarise(correlation = cor(log2_precision_over_prior, sample_num, method = "spearman")) %>% 
@@ -1037,7 +1037,7 @@ l2_prec_at_recall20_ss_cors %>%
 
 ### Tissue-aware Standard
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_prec_at_recall20_ss_cors_ts <- lrg_skpr %>% 
   group_by(method) %>% 
   summarise(correlation = cor(log2_precision_over_prior, sample_num, method = "spearman")) %>% 
@@ -1063,7 +1063,7 @@ Sample similarity is determined by subsetting all samples to the 50% most variab
 
 ### Tissue-naive Standard
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_auprc_prior_sexps_cors <- snr %>%
   group_by(method) %>% 
   summarise(correlation = cor(log2_auprc_over_prior, median_spearman, method = "spearman")) %>% 
@@ -1084,7 +1084,7 @@ l2_auprc_prior_sexps_cors %>%
 
 ### Tissue-aware Standard
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_auprc_prior_sexps_cors_ts <- skr %>% 
   group_by(method) %>% 
   summarise(correlation = cor(log2_auprc_over_prior, median_spearman, method = "spearman")) %>% 
@@ -1107,7 +1107,7 @@ l2_auprc_prior_sexps_cors_ts %>%
 
 ### Tissue-naive Standard
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_auroc_sexps_cors <- snr %>%
   group_by(method) %>% 
   summarise(correlation = cor(auROC, median_spearman, method = "spearman")) %>% 
@@ -1128,7 +1128,7 @@ l2_auroc_sexps_cors %>%
 
 ### Tissue-aware Standard
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_auroc_sexps_cors_ts <- skr %>% 
   group_by(method) %>% 
   summarise(correlation = cor(auROC, median_spearman, method = "spearman")) %>% 
@@ -1151,7 +1151,7 @@ l2_auroc_sexps_cors_ts %>%
 
 ### Tissue-naive Standard
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_prec_at_recall20_sexps_cors <- lrg_snpr %>% 
   group_by(method) %>% 
   summarise(correlation = cor(log2_precision_over_prior, median_spearman, method = "spearman")) %>% 
@@ -1172,7 +1172,7 @@ l2_prec_at_recall20_sexps_cors %>%
 
 ### Tissue-aware Standard
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_prec_at_recall20_sexps_cors_ts <- lrg_skpr %>% 
   group_by(method) %>% 
   summarise(correlation = cor(log2_precision_over_prior, median_spearman, method = "spearman")) %>% 
@@ -1198,7 +1198,7 @@ Read count diversity is calulated for a given experiment by taking the standard 
 
 ### Tissue-naive Standard
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_auprc_prior_sizediv_cors <- snr %>% 
   group_by(method) %>% 
   summarise(correlation = cor(log2_auprc_over_prior, sqrt(counts_sample_sums_variance), method = "spearman")) %>% 
@@ -1219,7 +1219,7 @@ l2_auprc_prior_sizediv_cors %>%
 
 ### Tissue-aware Standard
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_auprc_prior_sizediv_cors_ts <- skr %>% 
   group_by(method) %>% 
   summarise(correlation = cor(log2_auprc_over_prior, sqrt(counts_sample_sums_variance), method = "spearman")) %>% 
@@ -1242,7 +1242,7 @@ l2_auprc_prior_sizediv_cors_ts %>%
 
 ### Tissue-naive Standard
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_auroc_sizediv_cors <- snr %>% 
   group_by(method) %>% 
   summarise(correlation = cor(auROC, sqrt(counts_sample_sums_variance), method = "spearman")) %>% 
@@ -1263,7 +1263,7 @@ l2_auroc_sizediv_cors %>%
 
 ### Tissue-aware Standard
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_auroc_sizediv_cors_ts <- skr %>% 
   group_by(method) %>% 
   summarise(correlation = cor(auROC, sqrt(counts_sample_sums_variance), method = "spearman")) %>% 
@@ -1286,7 +1286,7 @@ l2_auroc_sizediv_cors_ts %>%
 
 ### Tissue-naive Standard
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_prec_at_recall20_sizediv_cors <- lrg_snpr %>% 
   group_by(method) %>% 
   summarise(correlation = cor(log2_precision_over_prior, sqrt(counts_sample_sums_variance), method = "spearman")) %>% 
@@ -1307,7 +1307,7 @@ l2_prec_at_recall20_sizediv_cors %>%
 
 ### Tissue-aware Standard
 
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_prec_at_recall20_sizediv_cors_ts <- lrg_skpr %>% 
   group_by(method) %>% 
   summarise(correlation = cor(log2_precision_over_prior, sqrt(counts_sample_sums_variance), method = "spearman")) %>% 
@@ -1332,7 +1332,7 @@ Each point in the interactive scatterplots represents the median performance (y-
 ## log<sub>2</sub>(auPRC/prior) {.tabset .tabset-fade .tabset-pills}
 
 ### Tissue-naive Standard
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_auprc_prior_tis_plot <- snr %>% 
   select(method, tissue, log2_auprc_over_prior) %>% 
   group_by(method, tissue) %>% 
@@ -1352,7 +1352,7 @@ ggplotly(l2_auprc_prior_tis_plot)
 ```
 
 ### Tissue-aware Standard
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_auprc_prior_tis_plot_ts <- skr %>% 
   select(method, tissue, log2_auprc_over_prior) %>% 
   group_by(method, tissue) %>% 
@@ -1374,7 +1374,7 @@ ggplotly(l2_auprc_prior_tis_plot_ts)
 ## auROC {.tabset .tabset-fade .tabset-pills}
 
 ### Tissue-naive Standard
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_auroc_tis_plot <- snr %>% 
   select(method, tissue, auROC) %>% 
   group_by(method, tissue) %>% 
@@ -1394,7 +1394,7 @@ ggplotly(l2_auroc_tis_plot)
 ```
 
 ### Tissue-aware Standard
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_auroc_tis_plot_ts <- skr %>% 
   select(method, tissue, auROC) %>% 
   group_by(method, tissue) %>% 
@@ -1416,7 +1416,7 @@ ggplotly(l2_auroc_tis_plot_ts)
 ## log<sub>2</sub>(p20r/prior) {.tabset .tabset-fade .tabset-pills}
 
 ### Tissue-naive Standard
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_prec_at_recall20_tis_plot <- lrg_snpr %>% 
   select(method, tissue, log2_precision_over_prior) %>% 
   group_by(method, tissue) %>% 
@@ -1436,7 +1436,7 @@ ggplotly(l2_prec_at_recall20_tis_plot)
 ```
 
 ### Tissue-aware Standard
-```{r echo=FALSE}
+```{r echo=FALSE, message=FALSE}
 l2_prec_at_recall20_tis_plot_ts <- lrg_skpr %>% 
   select(method, tissue, log2_precision_over_prior) %>% 
   group_by(method, tissue) %>% 
