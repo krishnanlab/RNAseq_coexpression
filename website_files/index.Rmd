@@ -19,7 +19,7 @@ knitr::include_graphics("plots/Figure1.png")
   
 <div class = "col-md-6">
 ## Overview
-This website contains all the results from our paper _Robust normalization and transformation techniques for constructing gene coexpression networks from RNA-seq data_, along with several additional results. These results are based on extensive benchmarking and analysis. Using the pipeline illustrated on the left (←),  we built over 80,000 coexpression networks using every combination of normalization and transformation methods to identify the best workflows for creating an accurate gene coexpression network from any typical RNA-seq experiment.
+This website contains all the results from our paper [_Robust normalization and transformation techniques for constructing gene coexpression networks from RNA-seq data_](https://doi.org/10.1101/2020.09.22.308577), along with several additional results. These results are based on extensive benchmarking and analysis. Using the pipeline illustrated on the left (←),  we built over 80,000 coexpression networks using every combination of normalization and transformation methods to identify the best workflows for creating an accurate gene coexpression network from any typical RNA-seq experiment.
 
 Results are divided by data source: the Genotype-Tissue Expression (GTEx) project, the Sequence Read Archive (SRA), and new datasets created by resampling samples from GTEx datasets (GTEx Resampling).
 
