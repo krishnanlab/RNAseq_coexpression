@@ -297,7 +297,7 @@ $ Rscript rlog_transform.R path/directory_to_be_transformed
 For support please contact [Kayla Johnson](https://twitter.com/kaylainbio) at john3491@msu.edu.
 
 ### License
-This repository and all its contents are released under the [Creative Commons License: Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode); See [LICENSE.md](https://github.com/krishnanlab/pecanpy/blob/master/LICENSE.md).
+This repository and all its contents are released under the [BSD 3-Clause License](https://opensource.org/licenses/BSD-3-Clause); See [LICENSE.md](https://github.com/krishnanlab/RNAseq_coexpression/blob/main/LICENSE.md).
 
 ### Citation
 If you use this work, please cite:  
