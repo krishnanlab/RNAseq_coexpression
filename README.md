@@ -291,3 +291,24 @@ __Use from command line__:
 ```bash
 $ Rscript rlog_transform.R path/directory_to_be_transformed
 ```
+
+## Additional Information
+### Support
+For support please contact [Kayla Johnson](https://twitter.com/kaylainbio) at john3491@msu.edu.
+
+### License
+This repository and all its contents are released under the [Creative Commons License: Attribution-NonCommercial-ShareAlike 4.0 International](https://creativecommons.org/licenses/by-nc-sa/4.0/legalcode); See [LICENSE.md](https://github.com/krishnanlab/pecanpy/blob/master/LICENSE.md).
+
+### Citation
+If you use this work, please cite:  
+Johnson KA, Krishnan A (2020) **Robust normalization and transformation techniques for constructing gene coexpression networks from RNA-seq data.** _bioRxiv_ doi.org/10.1101/2020.09.22.308577.
+
+### Authors
+Kayla A Johnson, Arjun Krishnan*
+>\*General correspondence should be addressed to AK at arjun@msu.edu.
+
+### Funding
+This work was primarily supported by US National Institutes of Health (NIH) grants R35 GM128765 to AK and in part by MSU start-up funds to AK.
+
+### Acknowledgements
+We thank the members of the [Krishnan Lab](https://www.thekrishnanlab.org/team) for helpful discussion. We are particularly grateful to [Anna Yannakopoulos](http://yannakopoulos.com/) and [Christopher A. Mancuso](https://github.com/ChristopherMancuso) for code advice, and [Stephanie Hickey](https://www.thekrishnanlab.org/team) for suggestions on the manuscript.
