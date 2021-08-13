@@ -1,0 +1,1458 @@
+---
+title: "All bar plots"
+output: html_notebook
+---
+
+```{r include=FALSE}
+library(plotly)
+library(tidyverse)
+library(knitr)
+library(rmarkdown)
+library(patchwork)
+library(ggfittext)
+library(ggplotify)
+library(Matrix)
+library(grid)
+```
+
+```{r}
+gnr <- read_delim("../data/final_36_workflows_gtex_naive-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+gkr <- read_delim("../data/final_36_workflows_gtex_knowledge-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+
+snr <- read_delim("../data/final_36_workflows_sra_naive-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+skr <- read_delim("../data/final_36_workflows_sra_knowledge-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+
+rnr <- read_delim("../data/final_36_workflows_gtex-resampling_naive-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+rkr <- read_delim("../data/final_36_workflows_gtex-resampling_knowledge-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+
+method_codes <- read.table("../data/method_codes.tsv", sep = "\t", header = T)
+
+label_colors <- c(" " = "#eff3ff", "CPM" = "#bdd7e7",
+                  "RPKM" = "#6baed6", "TPM" = "#2171b5",
+                  "  " = "#edf8e9", "QNT" = "#c7e9c0",  "TMM" = "#a1d99b",
+                  "UQ" = "#74c476", "CTF" = "#41ab5d",
+                  "CUF" = "#238b45", "   " = "#feedde",
+                  "CLR" = "#fdbe85", "WTO" = "#fd8d3c")
+```
+
+```{r include=FALSE}
+# GTEx
+methods_gn_auprc <- gnr %>% 
+  select(project, tissue, method, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue)
+
+methods_gn_auroc <- gnr %>% 
+  select(project, tissue, method, auROC) %>% 
+  spread(key = method, value = auROC) %>% 
+  select(-project, -tissue)
+
+methods_gn_p20r <- gnr %>% 
+  select(project, tissue, method, log2_p20r) %>% 
+  spread(key = method, value = log2_p20r) %>% 
+  select(-project, -tissue)
+
+methods_gk_auprc <- gkr %>% 
+  select(project, tissue, method, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue) 
+  
+methods_gk_auroc <- gkr %>% 
+  select(project, tissue, method, auROC) %>% 
+  spread(key = method, value = auROC) %>% 
+  select(-project, -tissue) 
+
+methods_gk_p20r <- gkr %>% 
+  select(project, tissue, method, log2_p20r) %>% 
+  spread(key = method, value = log2_p20r) %>% 
+  select(-project, -tissue)
+
+# SRA
+methods_sn_auprc <- snr %>% 
+  select(project, tissue, method, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue)
+
+methods_sn_auroc <- snr %>% 
+  select(project, tissue, method, auROC) %>% 
+  spread(key = method, value = auROC) %>% 
+  select(-project, -tissue)
+
+methods_sn_p20r <- snr %>% 
+  select(project, tissue, method, log2_p20r) %>% 
+  spread(key = method, value = log2_p20r) %>% 
+  select(-project, -tissue)
+
+methods_sk_auprc <- skr %>% 
+  select(project, tissue, method, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue) 
+  
+methods_sk_auroc <- skr %>% 
+  select(project, tissue, method, auROC) %>% 
+  spread(key = method, value = auROC) %>% 
+  select(-project, -tissue) 
+
+methods_sk_p20r <- skr %>% 
+  select(project, tissue, method, log2_p20r) %>% 
+  spread(key = method, value = log2_p20r) %>% 
+  select(-project, -tissue)
+```
+
+```{r include=FALSE}
+cpm_methods <- c("CPM", "CPM_QNT", "CPM_CLR", "CPM_QNT_CLR", "CPM_WTO", "CPM_QNT_WTO")
+rpkm_methods <- c("RPKM", "RPKM_QNT", "RPKM_CLR", "RPKM_QNT_CLR", "RPKM_WTO", "RPKM_QNT_WTO")
+tpm_methods <- c("TPM", "TPM_QNT", "TPM_CLR", "TPM_QNT_CLR", "TPM_WTO", "TPM_QNT_WTO")
+no_wi_methods <- c("counts", "QNT", "CLR", "QNT_CLR", "WTO", "QNT_WTO")
+
+tmm_methods <- c("TMM", "TMM_CLR", "TMM_WTO")
+uq_methods <- c("UQ", "UQ_CLR", "UQ_WTO")
+quantile_methods <- c("QNT", "QNT_CLR", "QNT_WTO")
+ctf_methods <- c("CTF", "CTF_CLR", "CTF_WTO")
+cuf_methods <- c("CUF", "CUF_CLR", "CUF_WTO")
+no_bw_methods <- c("counts", "CLR", "WTO")
+
+clr_methods <- c("CLR", "CPM_CLR", "RPKM_CLR", "TPM_CLR",
+                 "QNT_CLR", "TMM_CLR", "UQ_CLR", "CTF_CLR",
+                 "CUF_CLR", "CPM_QNT_CLR", "TPM_QNT_CLR", "RPKM_QNT_CLR")
+wto_methods <- c("WTO", "CPM_WTO", "RPKM_WTO", "TPM_WTO",
+                 "QNT_WTO", "TMM_WTO", "UQ_WTO", "CTF_WTO",
+                 "CUF_WTO", "CPM_QNT_WTO", "TPM_QNT_WTO", "RPKM_QNT_WTO")
+no_nt_methods <- c("counts", "CPM", "TPM", "RPKM",
+                   "TMM", "UQ", "QNT", "CTF", "CUF",
+                   "CPM_QNT", "TPM_QNT", "RPKM_QNT")
+
+all_within_methods <- c(cpm_methods, tpm_methods, rpkm_methods, no_wi_methods)
+all_between_methods <- c(tmm_methods, uq_methods, quantile_methods, 
+                         no_bw_methods, cuf_methods, ctf_methods)
+all_network_methods <- c(clr_methods, wto_methods, no_nt_methods)
+```
+
+```{r}
+get_times_greater_than_matrix <- function(meth_df){
+  # meth_df should be methods_* df (each row is performance on given dataset)
+  # meth_df is in alphabetical order
+  n_methods <- ncol(meth_df)
+  counts_output <- matrix(rep(0, (n_methods * n_methods)), nrow = n_methods, ncol = n_methods)
+  colnames(counts_output) <- colnames(meth_df)
+  rownames(counts_output) <- colnames(meth_df)
+  
+  for(num in 1:n_methods){
+  a <- pull(meth_df, num)
+  for(val in 1:n_methods){
+    if (num == val){
+      counts_output[val, num] <- 0.5
+      next
+    }
+    b <- pull(meth_df, val)
+    s <- sum(a < b)
+    s <- s/nrow(meth_df)
+    counts_output[val, num] <- s
+  }
+  }
+  return(counts_output)
+}
+
+get_significance_matrix <- function(df, performance_col_position, method_col_position){
+  #df tidy format with method as a column and performance as a column
+  sig_output <- pairwise.wilcox.test(x = pull(df, performance_col_position),
+                                     g = pull(df, method_col_position),
+                                     paired = TRUE,
+                                     p.adjust.method = "BH")
+  sig_output <- sig_output$p.value
+  
+  #add row/col to make 30 by 30
+  CLR <- sig_output[1,]
+  CLR[1] <- NA
+  sig_output <- rbind(CLR, sig_output)
+  WTO <- sig_output[,35]
+  WTO[36] <- NA
+  sig_output <- cbind(sig_output, WTO)
+  
+  #make symmetric
+  diag(sig_output) <- 1
+  sig_output <- Matrix::forceSymmetric(sig_output, uplo = "L")
+  sig_output <- as.matrix(sig_output)
+  #replace p vals with sig/not sig
+  sig_wilcox <- ifelse(sig_output < 0.01, "*", " ")
+  return(sig_wilcox)
+}
+
+#add function to make barplot figures 
+get_method_part_prop_sig_greater <- function(times_matrix, sig_matrix){
+  #times_matrix is output of get_times_greater_than_matrix
+  #sig_matrix is output of get_significance_matrix
+  #make times_matrix into tibble and get times method_one > method_two
+  times_greater_than_tibble <- as_tibble(times_matrix)
+  times_greater_than_tibble$method_one <- colnames(times_matrix)
+  times_greater_than_tibble <- times_greater_than_tibble %>% 
+    gather(key = method_two, value = times_method_one_is_greater_than_method_two, 1:36)
+  #make sig_matrix into tibble and get times corrected wilcox p value was
+  #significant between method_one and method_two
+  sig_wilcox_tibble <-  as_tibble(sig_matrix)
+  sig_wilcox_tibble$method_one <- colnames(sig_matrix)
+  sig_wilcox_tibble <- sig_wilcox_tibble %>%
+    gather(key = method_two, value = significance, 1:36)
+  sig_wilcox_tibble$significance <- ifelse(sig_wilcox_tibble$significance == "*",
+                                           T, F)
+  
+  #join above two tibbles into one
+  greater_than_significance_tibble <- left_join(times_greater_than_tibble,
+                                                sig_wilcox_tibble,
+                                                by = c("method_one", "method_two"))
+  #make T/F column designating whether method_one > method_two AND significant by 
+  #corrected wilcox p value
+  greater_than_significance_tibble$method_one_greater_than_and_sig <-
+    ifelse(greater_than_significance_tibble$times_method_one_is_greater_than_method_two > 0.5 &
+       greater_than_significance_tibble$significance == T, T, F)
+  
+  
+  analysis_groups <- c("within", "between", "network")
+  
+  method_summary <- tibble(group = "group", times_sig_and_greater = 22, 
+                           prop_times_sig_and_greater = 0.56)
+  
+  for (ag in analysis_groups){
+    if (ag == "within"){
+      restricted_methods <- c("TMM", "UQ", "CTF", "CUF",
+                              "TMM_CLR", "UQ_CLR", "CTF_CLR", "CUF_CLR", 
+                              "TMM_WTO", "UQ_WTO", "CTF_WTO", "CUF_WTO")
+      ag_methods <- all_within_methods
+    }
+    if (ag == "between"){
+      restricted_methods <-  c("CPM_QNT", "TPM_QNT", "RPKM_QNT", 
+                               "CPM_QNT_CLR", "TPM_QNT_CLR", "RPKM_QNT_CLR", 
+                               "CPM_QNT_WTO", "TPM_QNT_WTO", "RPKM_QNT_WTO")
+      ag_methods <- all_between_methods
+    }
+    if (ag == "network"){
+      restricted_methods <- "none"
+      ag_methods <- all_network_methods
+    }
+    
+    #summarize above info by method
+    ag_method_summary <- greater_than_significance_tibble %>%
+      filter(method_one %in% ag_methods) %>% 
+      filter(!method_two %in% restricted_methods) %>%
+      group_by(method_one) %>% 
+      summarise(times_sig_and_greater = sum(method_one_greater_than_and_sig))
+    #change col name from method_one to method
+    colnames(ag_method_summary) <- c("method", "times_sig_and_greater")
+    
+    if (ag == "within"){
+      #create T/F columns for each method part (does a method have the given method part?)
+      #wi
+      ag_method_summary$cpm <- ag_method_summary$method %in% cpm_methods
+      ag_method_summary$tpm <- ag_method_summary$method %in% tpm_methods
+      ag_method_summary$rpkm <- ag_method_summary$method %in% rpkm_methods
+      ag_method_summary$no_wi <- ag_method_summary$method %in% no_wi_methods
+      
+      #gather T/F method columns into method column/one T/F column
+      #keep only true rows so group col reflects methods actually in group
+      #don't need membership col anymore (all TRUEs anyway)
+      #group by group (method part)
+      #sum times sig and greater for each method in method part group
+      ag_method_summary <- ag_method_summary %>% 
+        gather(3:6, key = group, value = membership) %>% 
+        filter(membership == T) %>% 
+        select(-membership) %>% 
+        group_by(group) %>% 
+        summarise(times_sig_and_greater = sum(times_sig_and_greater))
+      
+      divisor <- 6*23 #6 methods in groups, 12 methods left out of analysis and 35-12=23 
+    }
+    if (ag == "between"){
+      #create T/F columns for each method part (does a method have the given method part?)
+      #bw
+      ag_method_summary$tmm <- ag_method_summary$method %in% tmm_methods
+      ag_method_summary$uq <- ag_method_summary$method %in% uq_methods
+      ag_method_summary$qnt <- ag_method_summary$method %in% quantile_methods
+      ag_method_summary$ctf <- ag_method_summary$method %in% ctf_methods
+      ag_method_summary$cuf <- ag_method_summary$method %in% cuf_methods
+      ag_method_summary$no_bw <- ag_method_summary$method %in% no_bw_methods
+      
+      #gather T/F method columns into method column/one T/F column
+      #keep only true rows so group col reflects methods actually in group
+      #don't need membership col anymore (all TRUEs anyway)
+      #group by group (method part)
+      #sum times sig and greater for each method in method part group
+      ag_method_summary <- ag_method_summary %>% 
+        gather(3:8, key = group, value = membership) %>% 
+        filter(membership == T) %>% 
+        select(-membership) %>% 
+        group_by(group) %>% 
+        summarise(times_sig_and_greater = sum(times_sig_and_greater))
+    
+      divisor <- 3*26 #3 methods in groups, 9 methods left out of analysis and 35-9=26
+    }
+    if (ag == "network"){
+      #create T/F columns for each method part (does a method have the given method part?)
+      #nt
+      ag_method_summary$wto <- ag_method_summary$method %in% wto_methods
+      ag_method_summary$clr <- ag_method_summary$method %in% clr_methods
+      ag_method_summary$no_nt <- ag_method_summary$method %in% no_nt_methods
+      
+      #gather T/F method columns into method column/one T/F column
+      #keep only true rows so group col reflects methods actually in group
+      #don't need membership col anymore (all TRUEs anyway)
+      #group by group (method part)
+      #sum times sig and greater for each method in method part group
+      ag_method_summary <- ag_method_summary %>% 
+        gather(3:5, key = group, value = membership) %>% 
+        filter(membership == T) %>% 
+        select(-membership) %>% 
+        group_by(group) %>% 
+        summarise(times_sig_and_greater = sum(times_sig_and_greater))
+    
+      divisor <- 10*35 #10 methods in groups, 0 methods left out of analysis and 35-0=35
+    }
+    
+    #divide number of times sig and greater by number of chances they had (determined by group length)
+    ag_method_summary <- ag_method_summary %>%
+      mutate(prop_times_sig_and_greater = times_sig_and_greater/divisor)
+    
+    #add to method_summary
+    method_summary <- bind_rows(method_summary, ag_method_summary)
+  }
+
+  #remove top row
+  method_summary <- method_summary[-1,]
+  #gives better names for plot
+  method_summary$group <- toupper(method_summary$group)
+  method_summary$group <- gsub("NO_BW", "NO-BW", method_summary$group)
+  method_summary$group <- gsub("NO_WI", "NO-WI", method_summary$group)
+  method_summary$group <- gsub("NO_NT", "NO-NT", method_summary$group)
+  
+  return(method_summary)
+}
+```
+
+```{r}
+group_label_colors <- c("WTO" = "#fd8d3c", "CLR" = "#fdbe85", "NO-NT" = "#feedde",
+                        "CUF" = "#238b45", "CTF" = "#41ab5d",
+                        "QNT" = "#c7e9c0", "UQ" = "#74c476", 
+                        "TMM" = "#a1d99b", "NO-BW" = "#edf8e9",
+                        "TPM" = "#2171b5", "RPKM" = "#6baed6", 
+                        "CPM" = "#bdd7e7", "NO-WI" = "#eff3ff")
+```
+
+# GTEx 
+
+## auprc
+```{r include=FALSE}
+#naive plot matrices
+l2_auprc_prior_gtex_naive_times_mat <- get_times_greater_than_matrix(methods_gn_auprc)
+l2_auprc_prior_gtex_naive_sig_mat <- get_significance_matrix(gnr, method_col_position = 3, performance_col_position = 4)
+l2_auprc_prior_gtex_naive_method_part_summary <- get_method_part_prop_sig_greater(times_matrix = l2_auprc_prior_gtex_naive_times_mat,
+                                                                                  sig_matrix =l2_auprc_prior_gtex_naive_sig_mat)
+
+#knowledge plot matrices
+l2_auprc_prior_gtex_knowledge_times_mat <- get_times_greater_than_matrix(methods_gk_auprc)
+l2_auprc_prior_gtex_knowledge_sig_mat <- get_significance_matrix(gkr, method_col_position = 3, performance_col_position = 4)
+l2_auprc_prior_gtex_knowledge_method_part_summary <- get_method_part_prop_sig_greater(l2_auprc_prior_gtex_knowledge_times_mat,
+                                                                                  l2_auprc_prior_gtex_knowledge_sig_mat)
+```
+
+```{r}
+#naive plot
+gtex_naive_auprc_bar <- l2_auprc_prior_gtex_naive_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+
+#knowledge plot
+gtex_knowledge_auprc_bar <- l2_auprc_prior_gtex_knowledge_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F)
+```
+
+## auroc
+```{r include=FALSE}
+#naive plot matrices
+l2_auroc_prior_gtex_naive_times_mat <- get_times_greater_than_matrix(methods_gn_auroc)
+l2_auroc_prior_gtex_naive_sig_mat <- get_significance_matrix(gnr, method_col_position = 3, performance_col_position = 5)
+l2_auroc_prior_gtex_naive_method_part_summary <- get_method_part_prop_sig_greater(times_matrix = l2_auroc_prior_gtex_naive_times_mat,
+                                                                                  sig_matrix =l2_auroc_prior_gtex_naive_sig_mat)
+
+#knowledge plot matrices
+l2_auroc_prior_gtex_knowledge_times_mat <- get_times_greater_than_matrix(methods_gk_auroc)
+l2_auroc_prior_gtex_knowledge_sig_mat <- get_significance_matrix(gkr, method_col_position = 3, performance_col_position = 5)
+l2_auroc_prior_gtex_knowledge_method_part_summary <- get_method_part_prop_sig_greater(l2_auroc_prior_gtex_knowledge_times_mat,
+                                                                                  l2_auroc_prior_gtex_knowledge_sig_mat)
+```
+
+```{r}
+#naive plot
+gtex_naive_auroc_bar <- l2_auroc_prior_gtex_naive_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+
+#knowledge plot
+gtex_knowledge_auroc_bar <- l2_auroc_prior_gtex_knowledge_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F)
+```
+
+## p20r
+```{r include=FALSE}
+#naive plot matrices
+l2_p20r_prior_gtex_naive_times_mat <- get_times_greater_than_matrix(methods_gn_p20r)
+l2_p20r_prior_gtex_naive_sig_mat <- get_significance_matrix(gnr, method_col_position = 3, performance_col_position = 6)
+l2_p20r_prior_gtex_naive_method_part_summary <- get_method_part_prop_sig_greater(times_matrix = l2_p20r_prior_gtex_naive_times_mat,
+                                                                                  sig_matrix =l2_p20r_prior_gtex_naive_sig_mat)
+
+#knowledge plot matrices
+l2_p20r_prior_gtex_knowledge_times_mat <- get_times_greater_than_matrix(methods_gk_p20r)
+l2_p20r_prior_gtex_knowledge_sig_mat <- get_significance_matrix(gkr, method_col_position = 3, performance_col_position = 6)
+l2_p20r_prior_gtex_knowledge_method_part_summary <- get_method_part_prop_sig_greater(l2_p20r_prior_gtex_knowledge_times_mat,
+                                                                                  l2_p20r_prior_gtex_knowledge_sig_mat)
+```
+
+```{r}
+#naive plot
+gtex_naive_p20r_bar <- l2_p20r_prior_gtex_naive_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+
+#knowledge plot
+gtex_knowledge_p20r_bar <- l2_p20r_prior_gtex_knowledge_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F)
+```
+
+# SRA
+
+## auprc
+```{r include=FALSE}
+#naive plot matrices
+l2_auprc_prior_sra_naive_times_mat <- get_times_greater_than_matrix(methods_sn_auprc)
+l2_auprc_prior_sra_naive_sig_mat <- get_significance_matrix(snr, method_col_position = 3, performance_col_position = 4)
+l2_auprc_prior_sra_naive_method_part_summary <- get_method_part_prop_sig_greater(times_matrix = l2_auprc_prior_sra_naive_times_mat,
+                                                                                  sig_matrix =l2_auprc_prior_sra_naive_sig_mat)
+
+#knowledge plot matrices
+l2_auprc_prior_sra_knowledge_times_mat <- get_times_greater_than_matrix(methods_sk_auprc)
+l2_auprc_prior_sra_knowledge_sig_mat <- get_significance_matrix(skr, method_col_position = 3, performance_col_position = 4)
+l2_auprc_prior_sra_knowledge_method_part_summary <- get_method_part_prop_sig_greater(l2_auprc_prior_sra_knowledge_times_mat,
+                                                                                  l2_auprc_prior_sra_knowledge_sig_mat)
+```
+
+```{r}
+#naive plot
+sra_naive_auprc_bar <- l2_auprc_prior_sra_naive_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+
+#knowledge plot
+sra_knowledge_auprc_bar <- l2_auprc_prior_sra_knowledge_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits =c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F)
+```
+
+## auroc
+```{r include=FALSE}
+#naive plot matrices
+l2_auroc_prior_sra_naive_times_mat <- get_times_greater_than_matrix(methods_sn_auroc)
+l2_auroc_prior_sra_naive_sig_mat <- get_significance_matrix(snr, method_col_position = 3, performance_col_position = 5)
+l2_auroc_prior_sra_naive_method_part_summary <- get_method_part_prop_sig_greater(times_matrix = l2_auroc_prior_sra_naive_times_mat,
+                                                                                  sig_matrix =l2_auroc_prior_sra_naive_sig_mat)
+
+#knowledge plot matrices
+l2_auroc_prior_sra_knowledge_times_mat <- get_times_greater_than_matrix(methods_sk_auroc)
+l2_auroc_prior_sra_knowledge_sig_mat <- get_significance_matrix(skr, method_col_position = 3, performance_col_position = 5)
+l2_auroc_prior_sra_knowledge_method_part_summary <- get_method_part_prop_sig_greater(l2_auroc_prior_sra_knowledge_times_mat,
+                                                                                  l2_auroc_prior_sra_knowledge_sig_mat)
+```
+
+```{r}
+#naive plot
+sra_naive_auroc_bar <- l2_auroc_prior_sra_naive_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+
+#knowledge plot
+sra_knowledge_auroc_bar <- l2_auroc_prior_sra_knowledge_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F)
+```
+
+## p20r
+```{r include=FALSE}
+#naive plot matrices
+l2_p20r_prior_sra_naive_times_mat <- get_times_greater_than_matrix(methods_sn_p20r)
+l2_p20r_prior_sra_naive_sig_mat <- get_significance_matrix(snr, method_col_position = 3, performance_col_position = 6)
+l2_p20r_prior_sra_naive_method_part_summary <- get_method_part_prop_sig_greater(times_matrix = l2_p20r_prior_sra_naive_times_mat,
+                                                                                  sig_matrix =l2_p20r_prior_sra_naive_sig_mat)
+
+#knowledge plot matrices
+l2_p20r_prior_sra_knowledge_times_mat <- get_times_greater_than_matrix(methods_sk_p20r)
+l2_p20r_prior_sra_knowledge_sig_mat <- get_significance_matrix(skr, method_col_position = 3, performance_col_position = 6)
+l2_p20r_prior_sra_knowledge_method_part_summary <- get_method_part_prop_sig_greater(l2_p20r_prior_sra_knowledge_times_mat,
+                                                                                  l2_p20r_prior_sra_knowledge_sig_mat)
+```
+
+```{r}
+#naive plot
+sra_naive_p20r_bar <- l2_p20r_prior_sra_naive_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+
+#knowledge plot
+sra_knowledge_p20r_bar <- l2_p20r_prior_sra_knowledge_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F)
+```
+
+# GTEx resampling
+
+## 5 samples
+```{r include=FALSE}
+#naive plot matrices
+naive_5_df <- rnr %>% filter(sample_num == 5)
+gtex_5_naive_methods <- naive_5_df %>% 
+  select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue, -trial)
+gtex_5_naive_times_mat <- get_times_greater_than_matrix(gtex_5_naive_methods)
+gtex_5_naive_sig_mat <- get_significance_matrix(naive_5_df, method_col_position = 3, performance_col_position = 6)
+gtex_5_naive_method_part_summary <- get_method_part_prop_sig_greater(times_matrix = gtex_5_naive_times_mat,
+                                                                                  sig_matrix = gtex_5_naive_sig_mat)
+
+#knowledge plot matrices
+knowledge_5_df <- rkr %>% filter(sample_num == 5)
+gtex_5_knowledge_methods <- knowledge_5_df %>% 
+  select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue, -trial)
+gtex_5_knowledge_times_mat <- get_times_greater_than_matrix(gtex_5_knowledge_methods)
+gtex_5_knowledge_sig_mat <- get_significance_matrix(knowledge_5_df, method_col_position = 3, performance_col_position = 6)
+gtex_5_knowledge_method_part_summary <- get_method_part_prop_sig_greater(gtex_5_knowledge_times_mat,
+                                                                                  gtex_5_knowledge_sig_mat)
+```
+
+```{r}
+# naive plot
+s5_naive_bar <- gtex_5_naive_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+
+# knowledge plot
+s5_knowledge_bar <- gtex_5_knowledge_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+```
+
+## 6 samples
+```{r include=FALSE}
+#naive plot matrices
+naive_6_df <- rnr %>% filter(sample_num == 6)
+gtex_6_naive_methods <- naive_6_df %>% 
+  select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue, -trial)
+gtex_6_naive_times_mat <- get_times_greater_than_matrix(gtex_6_naive_methods)
+gtex_6_naive_sig_mat <- get_significance_matrix(naive_6_df, method_col_position = 3, performance_col_position = 6)
+gtex_6_naive_method_part_summary <- get_method_part_prop_sig_greater(times_matrix = gtex_6_naive_times_mat,
+                                                                                  sig_matrix = gtex_6_naive_sig_mat)
+
+#knowledge plot matrices
+knowledge_6_df <- rkr %>% filter(sample_num == 6)
+gtex_6_knowledge_methods <- knowledge_6_df %>% 
+  select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue, -trial)
+gtex_6_knowledge_times_mat <- get_times_greater_than_matrix(gtex_6_knowledge_methods)
+gtex_6_knowledge_sig_mat <- get_significance_matrix(knowledge_6_df, method_col_position = 3, performance_col_position = 6)
+gtex_6_knowledge_method_part_summary <- get_method_part_prop_sig_greater(gtex_6_knowledge_times_mat,
+                                                                                  gtex_6_knowledge_sig_mat)
+```
+
+```{r}
+# naive plot
+s6_naive_bar <- gtex_6_naive_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+
+# knowledge plot
+s6_knowledge_bar <- gtex_6_knowledge_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+```
+
+## 7 samples
+```{r include=FALSE}
+#naive plot matrices
+naive_7_df <- rnr %>% filter(sample_num == 7)
+gtex_7_naive_methods <- naive_7_df %>% 
+  select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue, -trial)
+gtex_7_naive_times_mat <- get_times_greater_than_matrix(gtex_7_naive_methods)
+gtex_7_naive_sig_mat <- get_significance_matrix(naive_7_df, method_col_position = 3, performance_col_position = 6)
+gtex_7_naive_method_part_summary <- get_method_part_prop_sig_greater(times_matrix = gtex_7_naive_times_mat,
+                                                                                  sig_matrix = gtex_7_naive_sig_mat)
+
+#knowledge plot matrices
+knowledge_7_df <- rkr %>% filter(sample_num == 7)
+gtex_7_knowledge_methods <- knowledge_7_df %>% 
+  select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue, -trial)
+gtex_7_knowledge_times_mat <- get_times_greater_than_matrix(gtex_7_knowledge_methods)
+gtex_7_knowledge_sig_mat <- get_significance_matrix(knowledge_7_df, method_col_position = 3, performance_col_position = 6)
+gtex_7_knowledge_method_part_summary <- get_method_part_prop_sig_greater(gtex_7_knowledge_times_mat,
+                                                                                  gtex_7_knowledge_sig_mat)
+```
+
+```{r}
+# naive plot
+s7_naive_bar <- gtex_7_naive_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+
+# knowledge plot
+s7_knowledge_bar <- gtex_7_knowledge_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+```
+
+## 9 samples
+```{r include=FALSE}
+#naive plot matrices
+naive_9_df <- rnr %>% filter(sample_num == 9)
+gtex_9_naive_methods <- naive_9_df %>% 
+  select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue, -trial)
+gtex_9_naive_times_mat <- get_times_greater_than_matrix(gtex_9_naive_methods)
+gtex_9_naive_sig_mat <- get_significance_matrix(naive_9_df, method_col_position = 3, performance_col_position = 6)
+gtex_9_naive_method_part_summary <- get_method_part_prop_sig_greater(times_matrix = gtex_9_naive_times_mat,
+                                                                                  sig_matrix = gtex_9_naive_sig_mat)
+
+#knowledge plot matrices
+knowledge_9_df <- rkr %>% filter(sample_num == 9)
+gtex_9_knowledge_methods <- knowledge_9_df %>% 
+  select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue, -trial)
+gtex_9_knowledge_times_mat <- get_times_greater_than_matrix(gtex_9_knowledge_methods)
+gtex_9_knowledge_sig_mat <- get_significance_matrix(knowledge_9_df, method_col_position = 3, performance_col_position = 6)
+gtex_9_knowledge_method_part_summary <- get_method_part_prop_sig_greater(gtex_9_knowledge_times_mat,
+                                                                                  gtex_9_knowledge_sig_mat)
+```
+
+```{r}
+# naive plot
+s9_naive_bar <- gtex_9_naive_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+
+# knowledge plot
+s9_knowledge_bar <- gtex_9_knowledge_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+```
+
+## 11 samples
+```{r include=FALSE}
+#naive plot matrices
+naive_11_df <- rnr %>% filter(sample_num == 11)
+gtex_11_naive_methods <- naive_11_df %>% 
+  select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue, -trial)
+gtex_11_naive_times_mat <- get_times_greater_than_matrix(gtex_11_naive_methods)
+gtex_11_naive_sig_mat <- get_significance_matrix(naive_11_df, method_col_position = 3, performance_col_position = 6)
+gtex_11_naive_method_part_summary <- get_method_part_prop_sig_greater(times_matrix = gtex_11_naive_times_mat,
+                                                                                  sig_matrix = gtex_11_naive_sig_mat)
+
+#knowledge plot matrices
+knowledge_11_df <- rkr %>% filter(sample_num == 11)
+gtex_11_knowledge_methods <- knowledge_11_df %>% 
+  select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue, -trial)
+gtex_11_knowledge_times_mat <- get_times_greater_than_matrix(gtex_11_knowledge_methods)
+gtex_11_knowledge_sig_mat <- get_significance_matrix(knowledge_11_df, method_col_position = 3, performance_col_position = 6)
+gtex_11_knowledge_method_part_summary <- get_method_part_prop_sig_greater(gtex_11_knowledge_times_mat,
+                                                                                  gtex_11_knowledge_sig_mat)
+```
+
+```{r}
+# naive plot
+s11_naive_bar <- gtex_11_naive_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+
+# knowledge plot
+s11_knowledge_bar <- gtex_11_knowledge_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+```
+
+## 13 samples
+```{r include=FALSE}
+#naive plot matrices
+naive_13_df <- rnr %>% filter(sample_num == 13)
+gtex_13_naive_methods <- naive_13_df %>% 
+  select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue, -trial)
+gtex_13_naive_times_mat <- get_times_greater_than_matrix(gtex_13_naive_methods)
+gtex_13_naive_sig_mat <- get_significance_matrix(naive_13_df, method_col_position = 3, performance_col_position = 6)
+gtex_13_naive_method_part_summary <- get_method_part_prop_sig_greater(times_matrix = gtex_13_naive_times_mat,
+                                                                                  sig_matrix = gtex_13_naive_sig_mat)
+
+#knowledge plot matrices
+knowledge_13_df <- rkr %>% filter(sample_num == 13)
+gtex_13_knowledge_methods <- knowledge_13_df %>% 
+  select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue, -trial)
+gtex_13_knowledge_times_mat <- get_times_greater_than_matrix(gtex_13_knowledge_methods)
+gtex_13_knowledge_sig_mat <- get_significance_matrix(knowledge_13_df, method_col_position = 3, performance_col_position = 6)
+gtex_13_knowledge_method_part_summary <- get_method_part_prop_sig_greater(gtex_13_knowledge_times_mat,
+                                                                                  gtex_13_knowledge_sig_mat)
+```
+
+```{r}
+# naive plot
+s13_naive_bar <- gtex_13_naive_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+
+# knowledge plot
+s13_knowledge_bar <- gtex_13_knowledge_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+```
+
+## 16 samples
+```{r include=FALSE}
+#naive plot matrices
+naive_16_df <- rnr %>% filter(sample_num == 16)
+gtex_16_naive_methods <- naive_16_df %>% 
+  select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue, -trial)
+gtex_16_naive_times_mat <- get_times_greater_than_matrix(gtex_16_naive_methods)
+gtex_16_naive_sig_mat <- get_significance_matrix(naive_16_df, method_col_position = 3, performance_col_position = 6)
+gtex_16_naive_method_part_summary <- get_method_part_prop_sig_greater(times_matrix = gtex_16_naive_times_mat,
+                                                                                  sig_matrix = gtex_16_naive_sig_mat)
+
+#knowledge plot matrices
+knowledge_16_df <- rkr %>% filter(sample_num == 16)
+gtex_16_knowledge_methods <- knowledge_16_df %>% 
+  select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue, -trial)
+gtex_16_knowledge_times_mat <- get_times_greater_than_matrix(gtex_16_knowledge_methods)
+gtex_16_knowledge_sig_mat <- get_significance_matrix(knowledge_16_df, method_col_position = 3, performance_col_position = 6)
+gtex_16_knowledge_method_part_summary <- get_method_part_prop_sig_greater(gtex_16_knowledge_times_mat,
+                                                                                  gtex_16_knowledge_sig_mat)
+```
+
+```{r}
+# naive plot
+s16_naive_bar <- gtex_16_naive_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+
+# knowledge plot
+s16_knowledge_bar <- gtex_16_knowledge_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+```
+
+## 25 samples
+```{r include=FALSE}
+#naive plot matrices
+naive_25_df <- rnr %>% filter(sample_num == 25)
+gtex_25_naive_methods <- naive_25_df %>% 
+  select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue, -trial)
+gtex_25_naive_times_mat <- get_times_greater_than_matrix(gtex_25_naive_methods)
+gtex_25_naive_sig_mat <- get_significance_matrix(naive_25_df, method_col_position = 3, performance_col_position = 6)
+gtex_25_naive_method_part_summary <- get_method_part_prop_sig_greater(times_matrix = gtex_25_naive_times_mat,
+                                                                                  sig_matrix = gtex_25_naive_sig_mat)
+
+#knowledge plot matrices
+knowledge_25_df <- rkr %>% filter(sample_num == 25)
+gtex_25_knowledge_methods <- knowledge_25_df %>% 
+  select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue, -trial)
+gtex_25_knowledge_times_mat <- get_times_greater_than_matrix(gtex_25_knowledge_methods)
+gtex_25_knowledge_sig_mat <- get_significance_matrix(knowledge_25_df, method_col_position = 3, performance_col_position = 6)
+gtex_25_knowledge_method_part_summary <- get_method_part_prop_sig_greater(gtex_25_knowledge_times_mat,
+                                                                                  gtex_25_knowledge_sig_mat)
+```
+
+```{r}
+# naive plot
+s25_naive_bar <- gtex_25_naive_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+
+# knowledge plot
+s25_knowledge_bar <- gtex_25_knowledge_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+```
+
+## 40 samples
+```{r include=FALSE}
+#naive plot matrices
+naive_40_df <- rnr %>% filter(sample_num == 40)
+gtex_40_naive_methods <- naive_40_df %>% 
+  select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue, -trial)
+gtex_40_naive_times_mat <- get_times_greater_than_matrix(gtex_40_naive_methods)
+gtex_40_naive_sig_mat <- get_significance_matrix(naive_40_df, method_col_position = 3, performance_col_position = 6)
+gtex_40_naive_method_part_summary <- get_method_part_prop_sig_greater(times_matrix = gtex_40_naive_times_mat,
+                                                                                  sig_matrix = gtex_40_naive_sig_mat)
+
+#knowledge plot matrices
+knowledge_40_df <- rkr %>% filter(sample_num == 40)
+gtex_40_knowledge_methods <- knowledge_40_df %>% 
+  select(project, tissue, method, trial, log2_auprc_over_prior) %>% 
+  spread(key = method, value = log2_auprc_over_prior) %>% 
+  select(-project, -tissue, -trial)
+gtex_40_knowledge_times_mat <- get_times_greater_than_matrix(gtex_40_knowledge_methods)
+gtex_40_knowledge_sig_mat <- get_significance_matrix(knowledge_40_df, method_col_position = 3, performance_col_position = 6)
+gtex_40_knowledge_method_part_summary <- get_method_part_prop_sig_greater(gtex_40_knowledge_times_mat,
+                                                                                  gtex_40_knowledge_sig_mat)
+```
+
+```{r}
+# naive plot
+s40_naive_bar <- gtex_40_naive_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+
+# knowledge plot
+s40_knowledge_bar <- gtex_40_knowledge_method_part_summary %>% 
+  ggplot(aes(x = group, y = prop_times_sig_and_greater, fill = group)) +
+  geom_hline(yintercept = 0.25, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_col() +
+  annotation_custom(grob = textGrob(label = "text", hjust = 0, gp = gpar(cex = 1.5)),
+                    ymin = 3.5, ymax = 4, xmin = 3, xmax = 5) +
+  scale_x_discrete(limits = c("WTO", "CLR", "NO-NT",
+                              "CUF", "CTF", "UQ", "TMM", "QNT","NO-BW",
+                              "TPM", "RPKM", "CPM", "NO-WI")) +
+  scale_fill_manual(values = group_label_colors) +
+  geom_text(aes(label = round(prop_times_sig_and_greater, 2)), hjust = -0.1, color = "#999999", fontface = "bold") +
+  scale_y_continuous(limits = c(0,1)) +
+  coord_flip(clip = "off") +
+  theme(panel.background = element_rect(fill = "white"), 
+        panel.grid.minor = element_blank(), 
+        panel.grid.major = element_blank(),
+        text = element_text(size = 14),
+        axis.title = element_blank()) +
+  guides(fill = F) 
+```
+
+# Save
+```{r}
+# GTEx
+ggsave("../plots/gtex_naive_auprc_bar.png", plot = gtex_naive_auprc_bar, height = 8, width = 12)
+ggsave("../plots/gtex_naive_auroc_bar.png", plot = gtex_naive_auroc_bar, height = 8, width = 12)
+ggsave("../plots/gtex_naive_p20r_bar.png", plot = gtex_naive_p20r_bar, height = 8, width = 12)
+
+ggsave("../plots/gtex_knowledge_auprc_bar.png", plot = gtex_knowledge_auprc_bar, height = 8, width = 12)
+ggsave("../plots/gtex_knowledge_auroc_bar.png", plot = gtex_knowledge_auroc_bar, height = 8, width = 12)
+ggsave("../plots/gtex_knowledge_p20r_bar.png", plot = gtex_knowledge_p20r_bar, height = 8, width = 12)
+
+# SRA
+ggsave("../plots/sra_naive_auprc_bar.png", plot = sra_naive_auprc_bar, height = 8, width = 12)
+ggsave("../plots/sra_naive_auroc_bar.png", plot = sra_naive_auroc_bar, height = 8, width = 12)
+ggsave("../plots/sra_naive_p20r_bar.png", plot = sra_naive_p20r_bar, height = 8, width = 12)
+
+ggsave("../plots/sra_knowledge_auprc_bar.png", plot = sra_knowledge_auprc_bar, height = 8, width = 12)
+ggsave("../plots/sra_knowledge_auroc_bar.png", plot = sra_knowledge_auroc_bar, height = 8, width = 12)
+ggsave("../plots/sra_knowledge_p20r_bar.png", plot = sra_knowledge_p20r_bar, height = 8, width = 12)
+
+# GTEx resampling
+ggsave("../plots/s5_naive_bar.png", plot = s5_naive_bar, height = 8, width = 12)
+ggsave("../plots/s6_naive_bar.png", plot = s6_naive_bar, height = 8, width = 12)
+ggsave("../plots/s7_naive_bar.png", plot = s7_naive_bar, height = 8, width = 12)
+ggsave("../plots/s9_naive_bar.png", plot = s9_naive_bar, height = 8, width = 12)
+ggsave("../plots/s11_naive_bar.png", plot = s11_naive_bar, height = 8, width = 12)
+ggsave("../plots/s13_naive_bar.png", plot = s13_naive_bar, height = 8, width = 12)
+ggsave("../plots/s16_naive_bar.png", plot = s16_naive_bar, height = 8, width = 12)
+ggsave("../plots/s25_naive_bar.png", plot = s25_naive_bar, height = 8, width = 12)
+ggsave("../plots/s40_naive_bar.png", plot = s40_naive_bar, height = 8, width = 12)
+
+ggsave("../plots/s5_knowledge_bar.png", plot = s5_knowledge_bar, height = 8, width = 12)
+ggsave("../plots/s6_knowledge_bar.png", plot = s6_knowledge_bar, height = 8, width = 12)
+ggsave("../plots/s7_knowledge_bar.png", plot = s7_knowledge_bar, height = 8, width = 12)
+ggsave("../plots/s9_knowledge_bar.png", plot = s9_knowledge_bar, height = 8, width = 12)
+ggsave("../plots/s11_knowledge_bar.png", plot = s11_knowledge_bar, height = 8, width = 12)
+ggsave("../plots/s13_knowledge_bar.png", plot = s13_knowledge_bar, height = 8, width = 12)
+ggsave("../plots/s16_knowledge_bar.png", plot = s16_knowledge_bar, height = 8, width = 12)
+ggsave("../plots/s25_knowledge_bar.png", plot = s25_knowledge_bar, height = 8, width = 12)
+ggsave("../plots/s40_knowledge_bar.png", plot = s40_knowledge_bar, height = 8, width = 12)
+```
+
+

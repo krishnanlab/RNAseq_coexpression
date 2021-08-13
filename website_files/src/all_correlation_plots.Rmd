@@ -1,0 +1,814 @@
+---
+title: "All correlation plots"
+output: html_notebook
+---
+
+```{r include=FALSE}
+library(plotly)
+library(tidyverse)
+library(knitr)
+library(rmarkdown)
+library(patchwork)
+library(ggfittext)
+library(ggplotify)
+library(Matrix)
+library(grid)
+```
+
+```{r}
+gnr <- read_delim("../data/final_36_workflows_gtex_naive-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+gkr <- read_delim("../data/final_36_workflows_gtex_knowledge-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+
+snr <- read_delim("../data/final_36_workflows_sra_naive-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+skr <- read_delim("../data/final_36_workflows_sra_knowledge-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+
+method_codes <- read.table("../data/method_codes.tsv", sep = "\t", header = T)
+
+label_colors <- c(" " = "#eff3ff", "CPM" = "#bdd7e7",
+                  "RPKM" = "#6baed6", "TPM" = "#2171b5",
+                  "  " = "#edf8e9", "QNT" = "#c7e9c0",  "TMM" = "#a1d99b",
+                  "UQ" = "#74c476", "CTF" = "#41ab5d",
+                  "CUF" = "#238b45", "   " = "#feedde",
+                  "CLR" = "#fdbe85", "WTO" = "#fd8d3c")
+```
+
+# GTEx
+
+## sample size
+
+### auprc
+```{r echo=FALSE, message=FALSE}
+# naive
+l2_auprc_prior_ss_cors <- gnr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_auprc_over_prior, sample_num, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+gtex_naive_auprc_sample_size_plot <- l2_auprc_prior_ss_cors %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+# knowledge
+l2_auprc_prior_ss_cors_ts <- gkr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_auprc_over_prior, sample_num, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+gtex_knowledge_auprc_sample_size_plot <- l2_auprc_prior_ss_cors_ts %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+```
+
+### auroc
+```{r echo=FALSE, message=FALSE}
+# naive
+l2_auroc_ss_cors <- gnr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(auROC, sample_num, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+gtex_naive_auroc_sample_size_plot <- l2_auroc_ss_cors %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+
+#knowledge
+l2_auroc_ss_cors_ts <- gkr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(auROC, sample_num, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+gtex_knowledge_auroc_sample_size_plot <- l2_auroc_ss_cors_ts %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+```
+
+### p20r
+```{r}
+# naive
+l2_prec_at_recall20_ss_cors <- gnr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_p20r, sample_num, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+gtex_naive_p20r_sample_size_plot <- l2_prec_at_recall20_ss_cors %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+
+# knowledge
+l2_prec_at_recall20_ss_cors_ts <- gkr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_p20r, sample_num, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+gtex_knowledge_p20r_sample_size_plot <- l2_prec_at_recall20_ss_cors_ts %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+```
+
+## sample similarity
+
+### auprc
+```{r}
+# naive
+l2_auprc_prior_sexps_cors <- gnr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_auprc_over_prior, median_spearman, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+gtex_naive_auprc_sample_sim_plot <- l2_auprc_prior_sexps_cors %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+
+# knowledge
+l2_auprc_prior_sexps_cors_ts <- gkr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_auprc_over_prior, median_spearman, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+gtex_knowledge_auprc_sample_sim_plot <- l2_auprc_prior_sexps_cors_ts %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+```
+
+### auroc
+```{r}
+# naive
+l2_auroc_sexps_cors <- gnr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(auROC, median_spearman, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+gtex_naive_auroc_sample_sim_plot <- l2_auroc_sexps_cors %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+
+# knowledge
+l2_auroc_sexps_cors_ts <- gkr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(auROC, median_spearman, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+gtex_knowledge_auroc_sample_sim_plot <- l2_auroc_sexps_cors_ts %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+```
+
+### p20r
+```{r}
+# naive
+l2_prec_at_recall20_sexps_cors <- gnr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_p20r, median_spearman, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+gtex_naive_p20r_sample_sim_plot <- l2_prec_at_recall20_sexps_cors %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+
+# knowledge
+l2_prec_at_recall20_sexps_cors_ts <- gkr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_p20r, median_spearman, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+gtex_knowledge_p20r_sample_sim_plot <- l2_prec_at_recall20_sexps_cors_ts %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+```
+
+## Read count div
+
+### auprc
+```{r}
+# naive
+l2_auprc_prior_sizediv_cors <- gnr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_auprc_over_prior, sqrt(counts_sample_sums_variance), method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+gtex_naive_auprc_count_div_plot <- l2_auprc_prior_sizediv_cors %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+
+# knowledge
+l2_auprc_prior_sizediv_cors_ts <- gkr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_auprc_over_prior, sqrt(counts_sample_sums_variance), method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+gtex_knowledge_auprc_count_div_plot <- l2_auprc_prior_sizediv_cors_ts %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank()) 
+```
+
+### auroc
+```{r}
+# naive
+l2_auroc_sizediv_cors <- gnr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(auROC, sqrt(counts_sample_sums_variance), method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+gtex_naive_auroc_count_div_plot <- l2_auroc_sizediv_cors %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())  
+
+# knowledge
+l2_auroc_sizediv_cors_ts <- gkr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(auROC, sqrt(counts_sample_sums_variance), method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+gtex_knowledge_auroc_count_div_plot <- l2_auroc_sizediv_cors_ts %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank()) 
+```
+
+### p20r
+```{r}
+# naive
+l2_prec_at_recall20_sizediv_cors <- gnr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_p20r, sqrt(counts_sample_sums_variance), method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+gtex_naive_p20r_count_div_plot <- l2_prec_at_recall20_sizediv_cors %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank()) 
+
+# knowledge
+l2_prec_at_recall20_sizediv_cors_ts <- gkr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_p20r, sqrt(counts_sample_sums_variance), method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+gtex_knowledge_p20r_count_div_plot <- l2_prec_at_recall20_sizediv_cors_ts %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank()) 
+```
+
+# SRA
+
+## sample size
+
+### auprc
+```{r echo=FALSE, message=FALSE}
+# naive
+l2_auprc_prior_ss_cors <- snr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_auprc_over_prior, sample_num, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+sra_naive_auprc_sample_size_plot <- l2_auprc_prior_ss_cors %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+# knowledge
+l2_auprc_prior_ss_cors_ts <- skr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_auprc_over_prior, sample_num, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+sra_knowledge_auprc_sample_size_plot <- l2_auprc_prior_ss_cors_ts %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+```
+
+### auroc
+```{r echo=FALSE, message=FALSE}
+# naive
+l2_auroc_ss_cors <- snr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(auROC, sample_num, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+sra_naive_auroc_sample_size_plot <- l2_auroc_ss_cors %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+
+#knowledge
+l2_auroc_ss_cors_ts <- skr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(auROC, sample_num, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+sra_knowledge_auroc_sample_size_plot <- l2_auroc_ss_cors_ts %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+```
+
+### p20r
+```{r}
+# naive
+l2_prec_at_recall20_ss_cors <- snr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_p20r, sample_num, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+sra_naive_p20r_sample_size_plot <- l2_prec_at_recall20_ss_cors %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+
+# knowledge
+l2_prec_at_recall20_ss_cors_ts <- skr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_p20r, sample_num, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+sra_knowledge_p20r_sample_size_plot <- l2_prec_at_recall20_ss_cors_ts %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+```
+
+## sample similarity
+
+### auprc
+```{r}
+# naive
+l2_auprc_prior_sexps_cors <- snr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_auprc_over_prior, median_spearman, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+sra_naive_auprc_sample_sim_plot <- l2_auprc_prior_sexps_cors %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+
+# knowledge
+l2_auprc_prior_sexps_cors_ts <- skr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_auprc_over_prior, median_spearman, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+sra_knowledge_auprc_sample_sim_plot <- l2_auprc_prior_sexps_cors_ts %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+```
+
+### auroc
+```{r}
+# naive
+l2_auroc_sexps_cors <- snr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(auROC, median_spearman, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+sra_naive_auroc_sample_sim_plot <- l2_auroc_sexps_cors %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+
+# knowledge
+l2_auroc_sexps_cors_ts <- skr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(auROC, median_spearman, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+sra_knowledge_auroc_sample_sim_plot <- l2_auroc_sexps_cors_ts %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+```
+
+### p20r
+```{r}
+# naive
+l2_prec_at_recall20_sexps_cors <- snr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_p20r, median_spearman, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+sra_naive_p20r_sample_sim_plot <- l2_prec_at_recall20_sexps_cors %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+
+# knowledge
+l2_prec_at_recall20_sexps_cors_ts <- skr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_p20r, median_spearman, method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+sra_knowledge_p20r_sample_sim_plot <- l2_prec_at_recall20_sexps_cors_ts %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+```
+
+## Read count div
+
+### auprc
+```{r}
+# naive
+l2_auprc_prior_sizediv_cors <- snr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_auprc_over_prior, sqrt(counts_sample_sums_variance), method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+sra_naive_auprc_count_div_plot <- l2_auprc_prior_sizediv_cors %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())
+
+# knowledge
+l2_auprc_prior_sizediv_cors_ts <- skr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_auprc_over_prior, sqrt(counts_sample_sums_variance), method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+sra_knowledge_auprc_count_div_plot <- l2_auprc_prior_sizediv_cors_ts %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank()) 
+```
+
+### auroc
+```{r}
+# naive
+l2_auroc_sizediv_cors <- snr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(auROC, sqrt(counts_sample_sums_variance), method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+sra_naive_auroc_count_div_plot <- l2_auroc_sizediv_cors %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank())  
+
+# knowledge
+l2_auroc_sizediv_cors_ts <- skr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(auROC, sqrt(counts_sample_sums_variance), method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+sra_knowledge_auroc_count_div_plot <- l2_auroc_sizediv_cors_ts %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank()) 
+```
+
+### p20r
+```{r}
+# naive
+l2_prec_at_recall20_sizediv_cors <- snr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_p20r, sqrt(counts_sample_sums_variance), method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+sra_naive_p20r_count_div_plot <- l2_prec_at_recall20_sizediv_cors %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank()) 
+
+# knowledge
+l2_prec_at_recall20_sizediv_cors_ts <- gkr %>% 
+  group_by(method) %>% 
+  summarise(correlation = cor(log2_p20r, sqrt(counts_sample_sums_variance), method = "spearman")) %>% 
+  arrange(desc(correlation))
+
+sra_knowledge_p20r_count_div_plot <- l2_prec_at_recall20_sizediv_cors_ts %>% 
+  ggplot(aes(x = reorder(method, correlation), y = correlation)) +
+  geom_col(fill = "lightgray") +
+  geom_text(aes(label = round(correlation, digits = 3), hjust = ifelse(correlation > 0, 1, 0))) +
+  ylab("Spearman Correlation") +
+  coord_flip() +
+  theme(panel.background = element_rect(fill = "white"),
+        panel.grid.major = element_line(colour = "lightgray", size = 0.1),
+        panel.grid.minor = element_blank(),
+        text = element_text(size = 14),
+        axis.title.y = element_blank()) 
+```
+
+# Save
+```{r}
+# GTEx
+ggsave("../plots/gtex_naive_auprc_sample_size_plot.png", plot = gtex_naive_auprc_sample_size_plot, height = 8, width = 12)
+ggsave("../plots/gtex_naive_auroc_sample_size_plot.png", plot = gtex_naive_auroc_sample_size_plot, height = 8, width = 12)
+ggsave("../plots/gtex_naive_p20r_sample_size_plot.png", plot = gtex_naive_p20r_sample_size_plot, height = 8, width = 12)
+
+ggsave("../plots/gtex_knowledge_auprc_sample_size_plot.png", plot = gtex_knowledge_auprc_sample_size_plot, height = 8, width = 12)
+ggsave("../plots/gtex_knowledge_auroc_sample_size_plot.png", plot = gtex_knowledge_auroc_sample_size_plot, height = 8, width = 12)
+ggsave("../plots/gtex_knowledge_p20r_sample_size_plot.png", plot = gtex_knowledge_p20r_sample_size_plot, height = 8, width = 12)
+
+ggsave("../plots/gtex_naive_auprc_sample_sim_plot.png", plot = gtex_naive_auprc_sample_sim_plot, height = 8, width = 12)
+ggsave("../plots/gtex_naive_auroc_sample_sim_plot.png", plot = gtex_naive_auroc_sample_sim_plot, height = 8, width = 12)
+ggsave("../plots/gtex_naive_p20r_sample_sim_plot.png", plot = gtex_naive_p20r_sample_sim_plot, height = 8, width = 12)
+
+ggsave("../plots/gtex_knowledge_auprc_sample_sim_plot.png", plot = gtex_knowledge_auprc_sample_sim_plot, height = 8, width = 12)
+ggsave("../plots/gtex_knowledge_auroc_sample_sim_plot.png", plot = gtex_knowledge_auroc_sample_sim_plot, height = 8, width = 12)
+ggsave("../plots/gtex_knowledge_p20r_sample_sim_plot.png", plot = gtex_knowledge_p20r_sample_sim_plot, height = 8, width = 12)
+
+ggsave("../plots/gtex_naive_auprc_count_div_plot.png", plot = gtex_naive_auprc_count_div_plot, height = 8, width = 12)
+ggsave("../plots/gtex_naive_auroc_count_div_plot.png", plot = gtex_naive_auroc_count_div_plot, height = 8, width = 12)
+ggsave("../plots/gtex_naive_p20r_count_div_plot.png", plot = gtex_naive_p20r_count_div_plot, height = 8, width = 12)
+
+ggsave("../plots/gtex_knowledge_auprc_count_div_plot.png", plot = gtex_knowledge_auprc_count_div_plot, height = 8, width = 12)
+ggsave("../plots/gtex_knowledge_auroc_count_div_plot.png", plot = gtex_knowledge_auroc_count_div_plot, height = 8, width = 12)
+ggsave("../plots/gtex_knowledge_p20r_count_div_plot.png", plot = gtex_knowledge_p20r_count_div_plot, height = 8, width = 12)
+
+# SRA
+ggsave("../plots/sra_naive_auprc_sample_size_plot.png", plot = sra_naive_auprc_sample_size_plot, height = 8, width = 12)
+ggsave("../plots/sra_naive_auroc_sample_size_plot.png", plot = sra_naive_auroc_sample_size_plot, height = 8, width = 12)
+ggsave("../plots/sra_naive_p20r_sample_size_plot.png", plot = sra_naive_p20r_sample_size_plot, height = 8, width = 12)
+
+ggsave("../plots/sra_knowledge_auprc_sample_size_plot.png", plot = sra_knowledge_auprc_sample_size_plot, height = 8, width = 12)
+ggsave("../plots/sra_knowledge_auroc_sample_size_plot.png", plot = sra_knowledge_auroc_sample_size_plot, height = 8, width = 12)
+ggsave("../plots/sra_knowledge_p20r_sample_size_plot.png", plot = sra_knowledge_p20r_sample_size_plot, height = 8, width = 12)
+
+ggsave("../plots/sra_naive_auprc_sample_sim_plot.png", plot = sra_naive_auprc_sample_sim_plot, height = 8, width = 12)
+ggsave("../plots/sra_naive_auroc_sample_sim_plot.png", plot = sra_naive_auroc_sample_sim_plot, height = 8, width = 12)
+ggsave("../plots/sra_naive_p20r_sample_sim_plot.png", plot = sra_naive_p20r_sample_sim_plot, height = 8, width = 12)
+
+ggsave("../plots/sra_knowledge_auprc_sample_sim_plot.png", plot = sra_knowledge_auprc_sample_sim_plot, height = 8, width = 12)
+ggsave("../plots/sra_knowledge_auroc_sample_sim_plot.png", plot = sra_knowledge_auroc_sample_sim_plot, height = 8, width = 12)
+ggsave("../plots/sra_knowledge_p20r_sample_sim_plot.png", plot = sra_knowledge_p20r_sample_sim_plot, height = 8, width = 12)
+
+ggsave("../plots/sra_naive_auprc_count_div_plot.png", plot = sra_naive_auprc_count_div_plot, height = 8, width = 12)
+ggsave("../plots/sra_naive_auroc_count_div_plot.png", plot = sra_naive_auroc_count_div_plot, height = 8, width = 12)
+ggsave("../plots/sra_naive_p20r_count_div_plot.png", plot = sra_naive_p20r_count_div_plot, height = 8, width = 12)
+
+ggsave("../plots/sra_knowledge_auprc_count_div_plot.png", plot = sra_knowledge_auprc_count_div_plot, height = 8, width = 12)
+ggsave("../plots/sra_knowledge_auroc_count_div_plot.png", plot = sra_knowledge_auroc_count_div_plot, height = 8, width = 12)
+ggsave("../plots/sra_knowledge_p20r_count_div_plot.png", plot = sra_knowledge_p20r_count_div_plot, height = 8, width = 12)
+```
+
+
+
+
+
+
+
+

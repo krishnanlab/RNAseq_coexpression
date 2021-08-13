@@ -1,0 +1,1207 @@
+---
+title: "All box plots"
+output: html_notebook
+---
+
+```{r include=FALSE}
+library(plotly)
+library(tidyverse)
+library(knitr)
+library(rmarkdown)
+library(patchwork)
+library(ggfittext)
+library(ggplotify)
+library(Matrix)
+library(grid)
+```
+
+```{r}
+gnr <- read_delim("../data/final_36_workflows_gtex_naive-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+gkr <- read_delim("../data/final_36_workflows_gtex_knowledge-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+
+snr <- read_delim("../data/final_36_workflows_sra_naive-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+skr <- read_delim("../data/final_36_workflows_sra_knowledge-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+
+rnr <- read_delim("../data/final_36_workflows_gtex-resampling_naive-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+rkr <- read_delim("../data/final_36_workflows_gtex-resampling_knowledge-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+
+method_codes <- read.table("../data/method_codes.tsv", sep = "\t", header = T)
+
+label_colors <- c(" " = "#eff3ff", "CPM" = "#bdd7e7",
+                  "RPKM" = "#6baed6", "TPM" = "#2171b5",
+                  "  " = "#edf8e9", "QNT" = "#c7e9c0",  "TMM" = "#a1d99b",
+                  "UQ" = "#74c476", "CTF" = "#41ab5d",
+                  "CUF" = "#238b45", "   " = "#feedde",
+                  "CLR" = "#fdbe85", "WTO" = "#fd8d3c")
+```
+
+# GTEx
+
+## auprc/prior
+```{r}
+overall_l2_order <- gnr %>% 
+  select(method, log2_auprc_over_prior) %>% 
+  group_by(method) %>% 
+  summarise(perf = median(log2_auprc_over_prior)) %>% 
+  arrange(perf) %>% pull(method)
+#naive plot
+overall_log2_auprc_prior_naive_plot <- gnr %>% 
+  ggplot(aes(x = factor(method, overall_l2_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.2, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.3, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.4, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.6, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(breaks = c(0,0.1,0.2,0.3,0.4,0.5,0.6), labels = c("0","0.1","0.2","0.3","0.4","0.5","0.6")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#knowledge plot
+overall_log2_auprc_prior_knowledge_plot <- gkr %>% 
+  ggplot(aes(x = factor(method, overall_l2_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 2, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 2.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 3, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(breaks = c(-0.5,0,0.5,1,1.5,2,2.5,3), labels = c("-0.5","0","0.5","1","1.5","2","2.5","3")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#labels
+overall_l2_labels <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, levels = overall_l2_order), fill = value, label = value))+
+  geom_tile(color = "white", size = 0.5) +
+  #geom_text(aes(label = value)) +
+  scale_fill_manual(values = label_colors) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill = F) +
+  geom_fit_text()
+```
+
+```{r}
+gtex_auprc_box <- overall_l2_labels + 
+  overall_log2_auprc_prior_naive_plot + 
+  overall_log2_auprc_prior_knowledge_plot +
+  plot_layout(ncol = 3, widths = c(2,5,5))
+```
+
+
+## auROC
+```{r}
+overall_auroc_order <- gnr %>% 
+  select(method, auROC) %>% 
+  group_by(method) %>% 
+  summarise(perf = median(auROC)) %>% 
+  arrange(perf) %>% pull(method)
+#naive plot
+overall_auroc_naive_plot <- gnr %>% 
+  ggplot(aes(x = factor(method, overall_auroc_order), y = auROC)) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.525, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.55, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.575, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.6, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  scale_y_continuous(breaks = c(0.5,0.525,0.55,0.575,0.6,0.625), labels = c("0.5","0.525","0.55","0.575","0.6","0.625")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#knowledge plot
+overall_auroc_knowledge_plot <- gkr %>% 
+  ggplot(aes(x = factor(method, overall_auroc_order), y = auROC)) +
+  geom_hline(yintercept = 0.4, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.6, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.7, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.8, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  scale_y_continuous(breaks = c(0.4,0.5,0.6,0.7,0.8), labels = c("0.4","0.5","0.6","0.7","0.8")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#labels
+overall_auroc_labels <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, levels = overall_auroc_order), fill = value, label = value))+
+  geom_tile(color = "white", size = 0.5) +
+  #geom_text(aes(label = value)) +
+  scale_fill_manual(values = label_colors) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill = F) +
+  geom_fit_text()
+```
+
+```{r}
+gtex_auroc_box <- overall_auroc_labels + 
+  overall_auroc_naive_plot + 
+  overall_auroc_knowledge_plot +
+  plot_layout(ncol = 3, widths = c(2,5,5))
+```
+
+## p20r/prior
+```{r}
+overall_pr_order <- gnr %>% 
+  select(method, log2_p20r) %>% 
+  group_by(method) %>% 
+  summarise(perf = median(log2_p20r)) %>% 
+  arrange(perf) %>% pull(method)
+#naive plot
+overall_pr_naive_plot <- gnr %>% 
+  ggplot(aes(x = factor(method, overall_pr_order), y = log2_p20r)) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.2, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.4, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.6, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.8, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  scale_y_continuous(breaks = c(0,0.2,0.4,0.6,0.8), labels = c("0","0.2","0.4","0.6","0.8")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#knowledge plot
+overall_pr_knowledge_plot <- gkr %>% 
+  ggplot(aes(x = factor(method, overall_pr_order), y = log2_p20r)) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 2, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 3, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 4, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 5, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  scale_y_continuous(breaks = c(0,1,2,3,4,5), labels = c("0","1","2","3","4","5")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#labels
+overall_pr_labels <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, levels = overall_pr_order), fill = value, label = value))+
+  geom_tile(color = "white", size = 0.5) +
+  #geom_text(aes(label = value)) +
+  scale_fill_manual(values = label_colors) +
+  theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill = F) +
+  geom_fit_text()
+```
+
+```{r}
+gtex_p20r_box <- overall_pr_labels + 
+  overall_pr_naive_plot + 
+  overall_pr_knowledge_plot +
+  plot_layout(ncol = 3, widths = c(2,5,5))
+```
+
+```{r}
+ggsave("../plots/gtex_auprc_box.png", plot = gtex_auprc_box, height = 8, width = 12)
+ggsave("../plots/gtex_auroc_box.png", plot = gtex_auroc_box, height = 8, width = 12)
+ggsave("../plots/gtex_p20r_box.png", plot = gtex_p20r_box, height = 8, width = 12)
+```
+
+
+# SRA
+
+## auprc/prior
+```{r}
+overall_l2_order <- snr %>% 
+  select(method, log2_auprc_over_prior) %>% 
+  group_by(method) %>% 
+  summarise(perf = median(log2_auprc_over_prior)) %>% 
+  arrange(perf) %>% pull(method)
+#naive plot
+overall_log2_auprc_prior_naive_plot <- snr %>% 
+  ggplot(aes(x = factor(method, overall_l2_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.2, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = -0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.2, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.3, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.4, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.6, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(breaks = c(-0.2,-0.1,0,0.1,0.2,0.3,0.4,0.5,0.6), labels = c("-0.2","-0.1","0","0.1","0.2","0.3","0.4","0.5","0.6")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#knowledge plot
+overall_log2_auprc_prior_knowledge_plot <- skr %>% 
+  ggplot(aes(x = factor(method, overall_l2_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 2, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(breaks = c(0,0.5,1,1.5,2), labels = c("0","0.5","1","1.5","2")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#labels
+overall_l2_labels <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, levels = overall_l2_order), fill = value, label = value))+
+  geom_tile(color = "white", size = 0.5) +
+  #geom_text(aes(label = value)) +
+  scale_fill_manual(values = label_colors) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill = F) +
+  geom_fit_text()
+```
+
+```{r}
+sra_auprc_box <- overall_l2_labels + 
+  overall_log2_auprc_prior_naive_plot + 
+  overall_log2_auprc_prior_knowledge_plot +
+  plot_layout(ncol = 3, widths = c(2,5,5))
+```
+
+## auROC
+```{r}
+overall_auroc_order <- snr %>% 
+  select(method, auROC) %>% 
+  group_by(method) %>% 
+  summarise(perf = median(auROC)) %>% 
+  arrange(perf) %>% pull(method)
+#naive plot
+overall_auroc_naive_plot <- snr %>% 
+  ggplot(aes(x = factor(method, overall_auroc_order), y = auROC)) +
+  geom_hline(yintercept = 0.475, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.525, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.55, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.575, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.6, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  scale_y_continuous(breaks = c(0.475,0.5,0.525,0.55,0.575,0.6,0.625), labels = c("0.475","0.5","0.525","0.55","0.575","0.6","0.625")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#knowledge plot
+overall_auroc_knowledge_plot <- skr %>% 
+  ggplot(aes(x = factor(method, overall_auroc_order), y = auROC)) +
+  geom_hline(yintercept = 0.45, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.55, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.6, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.65, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.7, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.75, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  scale_y_continuous(breaks = c(0.45,0.5,0.55,0.6,0.65,0.7,0.75), labels = c("0.45","0.5","0.55","0.6","0.65","0.7","0.75")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#labels
+overall_auroc_labels <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, levels = overall_auroc_order), fill = value, label = value))+
+  geom_tile(color = "white", size = 0.5) +
+  #geom_text(aes(label = value)) +
+  scale_fill_manual(values = label_colors) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill = F) +
+  geom_fit_text()
+```
+
+```{r}
+sra_auroc_box <- overall_auroc_labels + 
+  overall_auroc_naive_plot + 
+  overall_auroc_knowledge_plot +
+  plot_layout(ncol = 3, widths = c(2,5,5))
+```
+
+## p20r/prior
+```{r}
+overall_pr_order <- snr %>% 
+  select(method, log2_p20r) %>% 
+  group_by(method) %>% 
+  summarise(perf = median(log2_p20r)) %>% 
+  arrange(perf) %>% pull(method)
+#naive plot
+overall_pr_naive_plot <- snr %>% 
+  ggplot(aes(x = factor(method, overall_pr_order), y = log2_p20r)) +
+  geom_hline(yintercept = -0.2, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.2, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.4, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.6, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.8, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  scale_y_continuous(breaks = c(-0.2,0,0.2,0.4,0.6,0.8,1), labels = c("-0.2","0","0.2","0.4","0.6","0.8","1")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#knowledge plot
+overall_pr_knowledge_plot <- skr %>% 
+  ggplot(aes(x = factor(method, overall_pr_order), y = log2_p20r)) +
+  geom_hline(yintercept = -1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 2, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 3, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 4, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  scale_y_continuous(breaks = c(-1,0,1,2,3,4,5), labels = c("-1","0","1","2","3","4","5")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#labels
+overall_pr_labels <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, levels = overall_pr_order), fill = value, label = value))+
+  geom_tile(color = "white", size = 0.5) +
+  #geom_text(aes(label = value)) +
+  scale_fill_manual(values = label_colors) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill = F) +
+  geom_fit_text()
+```
+
+```{r}
+sra_p20r_box <- overall_pr_labels + 
+  overall_pr_naive_plot + 
+  overall_pr_knowledge_plot +
+  plot_layout(ncol = 3, widths = c(2,5,5))
+```
+
+```{r}
+ggsave("../plots/sra_auprc_box.png", plot = sra_auprc_box, height = 8, width = 12)
+ggsave("../plots/sra_auroc_box.png", plot = sra_auroc_box, height = 8, width = 12)
+ggsave("../plots/sra_p20r_box.png", plot = sra_p20r_box, height = 8, width = 12)
+```
+
+# GTEx resampling
+
+## 5 samples
+```{r}
+overall_5_order <- rnr %>% 
+  filter(sample_num == 5) %>% 
+  select(method, log2_auprc_over_prior) %>% 
+  group_by(method) %>% 
+  summarise(perf = median(log2_auprc_over_prior)) %>% 
+  arrange(perf) %>% pull(method)
+#naive plot
+overall_5_naive_plot <- rnr %>% 
+  filter(sample_num == 5) %>% 
+  ggplot(aes(x = factor(method, overall_5_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.2, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.3, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.4, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(breaks = c(-0.1,0,0.1,0.2,0.3,0.4,0.5), labels = c("-0.1","0","0.1","0.2","0.3","0.4","0.5")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#knowledge plot
+overall_5_knowledge_plot <- rkr %>% 
+  ggplot(aes(x = factor(method, overall_5_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 2, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(breaks = c(-0.5,0,0.5,1,1.5,2), labels = c("-0.5","0","0.5","1","1.5","2")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#labels
+overall_5_labels <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, levels = overall_5_order), fill = value, label = value))+
+  geom_tile(color = "white", size = 0.5) +
+  #geom_text(aes(label = value)) +
+  scale_fill_manual(values = label_colors) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill = F) +
+  geom_fit_text()
+```
+
+```{r}
+s5_box <- overall_5_labels + 
+  overall_5_naive_plot + 
+  overall_5_knowledge_plot +
+  plot_layout(ncol = 3, widths = c(2,5,5))
+```
+
+## 6 samples
+```{r}
+overall_6_order <- rnr %>% 
+  filter(sample_num == 6) %>% 
+  select(method, log2_auprc_over_prior) %>% 
+  group_by(method) %>% 
+  summarise(perf = median(log2_auprc_over_prior)) %>% 
+  arrange(perf) %>% pull(method)
+#naive plot
+overall_6_naive_plot <- rnr %>% 
+  filter(sample_num == 6) %>% 
+  ggplot(aes(x = factor(method, overall_6_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.2, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.3, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.4, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(limits = c(-0.1, 0.5),
+                     breaks = c(-0.1,0,0.1,0.2,0.3,0.4,0.5), 
+                     labels = c("-0.1","0","0.1","0.2","0.3","0.4","0.5")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#knowledge plot
+overall_6_knowledge_plot <- rkr %>% 
+  ggplot(aes(x = factor(method, overall_6_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 2, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(breaks = c(-0.5,0,0.5,1,1.5,2), labels = c("-0.5","0","0.5","1","1.5","2")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#labels
+overall_6_labels <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, levels = overall_6_order), fill = value, label = value))+
+  geom_tile(color = "white", size = 0.5) +
+  #geom_text(aes(label = value)) +
+  scale_fill_manual(values = label_colors) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill = F) +
+  geom_fit_text()
+```
+
+```{r}
+s6_box <- overall_6_labels + 
+  overall_6_naive_plot + 
+  overall_6_knowledge_plot +
+  plot_layout(ncol = 3, widths = c(2,5,5))
+```
+
+## 7 samples
+```{r}
+overall_7_order <- rnr %>% 
+  filter(sample_num == 7) %>% 
+  select(method, log2_auprc_over_prior) %>% 
+  group_by(method) %>% 
+  summarise(perf = median(log2_auprc_over_prior)) %>% 
+  arrange(perf) %>% pull(method)
+#naive plot
+overall_7_naive_plot <- rnr %>% 
+  filter(sample_num == 7) %>% 
+  ggplot(aes(x = factor(method, overall_7_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.2, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.3, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.4, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(breaks = c(-0.1,0,0.1,0.2,0.3,0.4,0.5), labels = c("-0.1","0","0.1","0.2","0.3","0.4","0.5")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#knowledge plot
+overall_7_knowledge_plot <- rkr %>% 
+  ggplot(aes(x = factor(method, overall_7_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 2, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(breaks = c(-0.5,0,0.5,1,1.5,2), labels = c("-0.5","0","0.5","1","1.5","2")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#labels
+overall_7_labels <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, levels = overall_7_order), fill = value, label = value))+
+  geom_tile(color = "white", size = 0.5) +
+  #geom_text(aes(label = value)) +
+  scale_fill_manual(values = label_colors) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill = F) +
+  geom_fit_text()
+```
+
+```{r}
+s7_box <- overall_7_labels + 
+  overall_7_naive_plot + 
+  overall_7_knowledge_plot +
+  plot_layout(ncol = 3, widths = c(2,5,5))
+```
+
+## 9 samples
+```{r}
+overall_9_order <- rnr %>% 
+  filter(sample_num == 9) %>% 
+  select(method, log2_auprc_over_prior) %>% 
+  group_by(method) %>% 
+  summarise(perf = median(log2_auprc_over_prior)) %>% 
+  arrange(perf) %>% pull(method)
+#naive plot
+overall_9_naive_plot <- rnr %>% 
+  filter(sample_num == 9) %>% 
+  ggplot(aes(x = factor(method, overall_9_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.2, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.3, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.4, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(breaks = c(-0.1,0,0.1,0.2,0.3,0.4,0.5), labels = c("-0.1","0","0.1","0.2","0.3","0.4","0.5")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#knowledge plot
+overall_9_knowledge_plot <- rkr %>% 
+  ggplot(aes(x = factor(method, overall_9_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 2, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(breaks = c(-0.5,0,0.5,1,1.5,2), labels = c("-0.5","0","0.5","1","1.5","2")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#labels
+overall_9_labels <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, levels = overall_9_order), fill = value, label = value))+
+  geom_tile(color = "white", size = 0.5) +
+  #geom_text(aes(label = value)) +
+  scale_fill_manual(values = label_colors) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill = F) +
+  geom_fit_text()
+```
+
+```{r}
+s9_box <- overall_9_labels + 
+  overall_9_naive_plot + 
+  overall_9_knowledge_plot +
+  plot_layout(ncol = 3, widths = c(2,5,5))
+```
+
+## 11 samples
+```{r include=FALSE}
+overall_11_order <- rnr %>% 
+  filter(sample_num == 11) %>% 
+  select(method, log2_auprc_over_prior) %>% 
+  group_by(method) %>% 
+  summarise(perf = median(log2_auprc_over_prior)) %>% 
+  arrange(perf) %>% pull(method)
+#naive plot
+overall_11_naive_plot <- rnr %>% 
+  filter(sample_num == 11) %>% 
+  ggplot(aes(x = factor(method, overall_11_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.2, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.3, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.4, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(breaks = c(-0.1,0,0.1,0.2,0.3,0.4,0.5), labels = c("-0.1","0","0.1","0.2","0.3","0.4","0.5")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#knowledge plot
+overall_11_knowledge_plot <- rkr %>% 
+  ggplot(aes(x = factor(method, overall_11_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 2, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(breaks = c(-0.5,0,0.5,1,1.5,2), labels = c("-0.5","0","0.5","1","1.5","2")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#labels
+overall_11_labels <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, levels = overall_11_order), fill = value, label = value))+
+  geom_tile(color = "white", size = 0.5) +
+  #geom_text(aes(label = value)) +
+  scale_fill_manual(values = label_colors) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill = F) +
+  geom_fit_text()
+```
+
+```{r}
+s11_box <- overall_11_labels + 
+  overall_11_naive_plot + 
+  overall_11_knowledge_plot +
+  plot_layout(ncol = 3, widths = c(2,5,5))
+```
+
+## 13 samples 
+```{r include=FALSE}
+overall_13_order <- rnr %>% 
+  filter(sample_num == 13) %>% 
+  select(method, log2_auprc_over_prior) %>% 
+  group_by(method) %>% 
+  summarise(perf = median(log2_auprc_over_prior)) %>% 
+  arrange(perf) %>% pull(method)
+#naive plot
+overall_13_naive_plot <- rnr %>% 
+  filter(sample_num == 13) %>% 
+  ggplot(aes(x = factor(method, overall_13_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.2, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.3, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.4, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(breaks = c(-0.1,0,0.1,0.2,0.3,0.4,0.5), labels = c("-0.1","0","0.1","0.2","0.3","0.4","0.5")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#knowledge plot
+overall_13_knowledge_plot <- rkr %>% 
+  ggplot(aes(x = factor(method, overall_13_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 2, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(breaks = c(-0.5,0,0.5,1,1.5,2), labels = c("-0.5","0","0.5","1","1.5","2")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#labels
+overall_13_labels <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, levels = overall_13_order), fill = value, label = value))+
+  geom_tile(color = "white", size = 0.5) +
+  #geom_text(aes(label = value)) +
+  scale_fill_manual(values = label_colors) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill = F) +
+  geom_fit_text()
+```
+
+```{r}
+s13_box <- overall_13_labels + 
+  overall_13_naive_plot + 
+  overall_13_knowledge_plot +
+  plot_layout(ncol = 3, widths = c(2,5,5))
+```
+
+## 16 samples
+```{r include=FALSE}
+overall_16_order <- rnr %>% 
+  filter(sample_num == 16) %>% 
+  select(method, log2_auprc_over_prior) %>% 
+  group_by(method) %>% 
+  summarise(perf = median(log2_auprc_over_prior)) %>% 
+  arrange(perf) %>% pull(method)
+#naive plot
+overall_16_naive_plot <- rnr %>% 
+  filter(sample_num == 16) %>% 
+  ggplot(aes(x = factor(method, overall_16_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.2, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.3, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.4, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(limits = c(-0.15, .55),
+                     breaks = c(-0.1,0,0.1,0.2,0.3,0.4,0.5), 
+                     labels = c("-0.1","0","0.1","0.2","0.3","0.4","0.5")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#knowledge plot
+overall_16_knowledge_plot <- rkr %>% 
+  ggplot(aes(x = factor(method, overall_16_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 2, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(breaks = c(-0.5,0,0.5,1,1.5,2), labels = c("-0.5","0","0.5","1","1.5","2")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#labels
+overall_16_labels <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, levels = overall_16_order), fill = value, label = value))+
+  geom_tile(color = "white", size = 0.5) +
+  #geom_text(aes(label = value)) +
+  scale_fill_manual(values = label_colors) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill = F) +
+  geom_fit_text()
+```
+
+```{r}
+s16_box <- overall_16_labels + 
+  overall_16_naive_plot + 
+  overall_16_knowledge_plot +
+  plot_layout(ncol = 3, widths = c(2,5,5))
+```
+
+## 25 samples
+```{r include=FALSE}
+overall_25_order <- rnr %>% 
+  filter(sample_num == 25) %>% 
+  select(method, log2_auprc_over_prior) %>% 
+  group_by(method) %>% 
+  summarise(perf = median(log2_auprc_over_prior)) %>% 
+  arrange(perf) %>% pull(method)
+#naive plot
+overall_25_naive_plot <- rnr %>% 
+  filter(sample_num == 25) %>% 
+  ggplot(aes(x = factor(method, overall_25_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.2, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.3, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.4, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.6, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(breaks = c(-0.1,0,0.1,0.2,0.3,0.4,0.5,0.6), labels = c("-0.1","0","0.1","0.2","0.3","0.4","0.5","0.6")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#knowledge plot
+overall_25_knowledge_plot <- rkr %>% 
+  ggplot(aes(x = factor(method, overall_25_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 2, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(breaks = c(-0.5,0,0.5,1,1.5,2), labels = c("-0.5","0","0.5","1","1.5","2")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#labels
+overall_25_labels <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, levels = overall_25_order), fill = value, label = value))+
+  geom_tile(color = "white", size = 0.5) +
+  #geom_text(aes(label = value)) +
+  scale_fill_manual(values = label_colors) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill = F) +
+  geom_fit_text()
+```
+
+```{r}
+s25_box <- overall_25_labels + 
+  overall_25_naive_plot + 
+  overall_25_knowledge_plot +
+  plot_layout(ncol = 3, widths = c(2,5,5))
+```
+
+## 40 samples
+```{r include=FALSE}
+overall_40_order <- rnr %>% 
+  filter(sample_num == 40) %>% 
+  select(method, log2_auprc_over_prior) %>% 
+  group_by(method) %>% 
+  summarise(perf = median(log2_auprc_over_prior)) %>% 
+  arrange(perf) %>% pull(method)
+#naive plot
+overall_40_naive_plot <- rnr %>% 
+  filter(sample_num == 40) %>% 
+  ggplot(aes(x = factor(method, overall_40_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.2, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.3, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.4, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.6, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(limits = c(-0.1, 0.65),
+                     breaks = c(-0.1,0,0.1,0.2,0.3,0.4,0.5,0.6), 
+                     labels = c("-0.1","0","0.1","0.2","0.3","0.4","0.5","0.6")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#knowledge plot
+overall_40_knowledge_plot <- rkr %>% 
+  ggplot(aes(x = factor(method, overall_40_order), y = log2_auprc_over_prior)) +
+  geom_hline(yintercept = -0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 0.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 1.5, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 2, color = "#999999", size = 0.1) +
+  geom_boxplot(fill = "lightgray", outlier.size = 0.5) +
+  coord_flip() +
+  #labs(y=expression(Log[2](auPRC/prior))) +
+  scale_y_continuous(breaks = c(-0.5,0,0.5,1,1.5,2), labels = c("-0.5","0","0.5","1","1.5","2")) +
+  theme(panel.background = element_rect(fill = "white"), 
+        text = element_text(size = 14),
+        axis.text.y = element_blank(), 
+        axis.title.y = element_blank(),
+        axis.title.x = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill=FALSE)
+
+#labels
+overall_40_labels <- method_codes %>% 
+  ggplot(aes(x = key, y = factor(method, levels = overall_40_order), fill = value, label = value))+
+  geom_tile(color = "white", size = 0.5) +
+  #geom_text(aes(label = value)) +
+  scale_fill_manual(values = label_colors) +
+    theme(panel.background = element_blank(),
+        panel.grid.major = element_blank(),
+        panel.grid.minor = element_blank(),
+        axis.text = element_blank(), 
+        axis.ticks = element_blank(),
+        axis.title = element_blank(),
+        plot.margin = margin(5,0.5,5,0.5)) +
+  guides(fill = F) +
+  geom_fit_text()
+```
+
+```{r}
+s40_box <- overall_40_labels + 
+  overall_40_naive_plot + 
+  overall_40_knowledge_plot +
+  plot_layout(ncol = 3, widths = c(2,5,5))
+```
+
+```{r}
+ggsave("../plots/s5_box.png", plot = s5_box, height = 8, width = 12)
+ggsave("../plots/s6_box.png", plot = s6_box, height = 8, width = 12)
+ggsave("../plots/s7_box.png", plot = s7_box, height = 8, width = 12)
+ggsave("../plots/s9_box.png", plot = s9_box, height = 8, width = 12)
+ggsave("../plots/s11_box.png", plot = s11_box, height = 8, width = 12)
+ggsave("../plots/s13_box.png", plot = s13_box, height = 8, width = 12)
+ggsave("../plots/s16_box.png", plot = s16_box, height = 8, width = 12)
+ggsave("../plots/s25_box.png", plot = s25_box, height = 8, width = 12)
+ggsave("../plots/s40_box.png", plot = s40_box, height = 8, width = 12)
+```
+
+
+
+
+
+
+

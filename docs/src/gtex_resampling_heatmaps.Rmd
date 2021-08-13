@@ -15,49 +15,36 @@ library(Matrix)
 ```
 
 # GTEx resampling data
-```{r include=FALSE}
-rnr <- read_delim("../data/2020-03-19_gtex_resampling_naive_results.txt",
-                    delim = "\t", col_names = T)
-rnpr <- read_delim("../data/2020-03-19_prec_recall_gtex_resampling_naive_results.txt",
-                   delim = "\t", col_names = T) %>% 
-  filter(recall == 20)
-rkr <- read_delim("../data/2020-03-19_gtex_resampling_knowledge_results.txt",
-                    delim = "\t", col_names = T)
-rkpr <- read_delim("../data/2020-03-19_prec_recall_gtex_resampling_knowledge_results.txt",
-                   delim = "\t", col_names = T) %>% 
-  filter(recall == 20)
-
-rnr$method <- gsub("quantile", "QNT", rnr$method)
-rnr$method <- gsub("wTO", "WTO", rnr$method)
-rnpr$method <- gsub("quantile", "QNT", rnpr$method)
-rnpr$method <- gsub("wTO", "WTO", rnpr$method)
-
-rkr$method <- gsub("quantile", "QNT", rkr$method)
-rkr$method <- gsub("wTO", "WTO", rkr$method)
-rkpr$method <- gsub("quantile", "QNT", rkpr$method)
-rkpr$method <- gsub("wTO", "WTO", rkpr$method)
-```
-
-# Method Codes
 ```{r}
-method_codes <- read_delim("../data/2020-03-19_method_codes.txt",
-                           delim = "\t", col_names = T)
-method_codes$method <- gsub("quantile", "QNT", method_codes$method)
-method_codes$method <- gsub("wTO", "WTO", method_codes$method)
+rnr <- read_delim("../data/final_36_workflows_gtex-resampling_naive-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+rkr <- read_delim("../data/final_36_workflows_gtex-resampling_knowledge-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+
+method_codes <- read.table("../data/method_codes.tsv", sep = "\t", header = T)
+
+label_colors <- c(" " = "#eff3ff", "CPM" = "#bdd7e7",
+                  "RPKM" = "#6baed6", "TPM" = "#2171b5",
+                  "  " = "#edf8e9", "QNT" = "#c7e9c0",  "TMM" = "#a1d99b",
+                  "UQ" = "#74c476", "CTF" = "#41ab5d",
+                  "CUF" = "#238b45", "   " = "#feedde",
+                  "CLR" = "#fdbe85", "WTO" = "#fd8d3c")
 ```
 
 # Functions
 ```{r include=FALSE}
-#functions to build heatmap
+# Functions to create heatmaps
 get_times_greater_than_matrix <- function(meth_df){
-  #df should be methods_* df (each row is performance on given dataset)
-  counts_output <- matrix(rep(0, 900), nrow = 30, ncol = 30)
+  # meth_df should be methods_* df (each row is performance on given dataset)
+  # meth_df is in alphabetical order
+  n_methods <- ncol(meth_df)
+  counts_output <- matrix(rep(0, (n_methods * n_methods)), nrow = n_methods, ncol = n_methods)
   colnames(counts_output) <- colnames(meth_df)
   rownames(counts_output) <- colnames(meth_df)
   
-  for(num in 1:30){
+  for(num in 1:n_methods){
   a <- pull(meth_df, num)
-  for(val in 1:30){
+  for(val in 1:n_methods){
     if (num == val){
       counts_output[val, num] <- 0.5
       next
@@ -76,14 +63,15 @@ get_significance_matrix <- function(df, performance_col_position, method_col_pos
   sig_output <- pairwise.wilcox.test(x = pull(df, performance_col_position),
                                      g = pull(df, method_col_position),
                                      paired = TRUE,
-                                     p.adjust.method = "BH")$p.value
+                                     p.adjust.method = "BH")
+  sig_output <- sig_output$p.value
   
   #add row/col to make 30 by 30
   CLR <- sig_output[1,]
   CLR[1] <- NA
   sig_output <- rbind(CLR, sig_output)
-  WTO <- sig_output[,29]
-  WTO[30] <- NA
+  WTO <- sig_output[,35]
+  WTO[36] <- NA
   sig_output <- cbind(sig_output, WTO)
   
   #make symmetric
@@ -91,7 +79,8 @@ get_significance_matrix <- function(df, performance_col_position, method_col_pos
   sig_output <- Matrix::forceSymmetric(sig_output, uplo = "L")
   sig_output <- as.matrix(sig_output)
   #replace p vals with sig/not sig
-  sig_wilcox_gtex_naive <- ifelse(sig_output < 0.01, "*", " ")
+  sig_wilcox <- ifelse(sig_output < 0.01, "*", " ")
+  return(sig_wilcox)
 }
 
 get_method_times_sig_greater <- function(times_matrix, sig_matrix){
@@ -101,13 +90,13 @@ get_method_times_sig_greater <- function(times_matrix, sig_matrix){
   times_greater_than_tibble <- as_tibble(times_matrix)
   times_greater_than_tibble$method_one <- colnames(times_matrix)
   times_greater_than_tibble <- times_greater_than_tibble %>% 
-    gather(key = method_two, value = times_method_one_is_greater_than_method_two, 1:30)
+    gather(key = method_two, value = times_method_one_is_greater_than_method_two, 1:36)
   #make sig_matrix into tibble and get times corrected wilcox p value was
   #significant between method_one and method_two
   sig_wilcox_tibble <-  as_tibble(sig_matrix)
   sig_wilcox_tibble$method_one <- colnames(sig_matrix)
   sig_wilcox_tibble <- sig_wilcox_tibble %>%
-    gather(key = method_two, value = significance, 1:30)
+    gather(key = method_two, value = significance, 1:36)
   sig_wilcox_tibble$significance <- ifelse(sig_wilcox_tibble$significance == "*",
                                            T, F)
   
@@ -184,11 +173,7 @@ for (ss in unique(rnr$sample_num)){
     ggplot(aes(x = key, y = factor(method, levels = rev(heatmap_order)), fill = value, label = value))+
     geom_tile(color = "white", size = 0.5) +
     #geom_text(aes(label = value)) +
-    scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+    scale_fill_manual(values = label_colors) +
     theme(panel.background = element_blank(),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -201,14 +186,17 @@ for (ss in unique(rnr$sample_num)){
  
   bar_plot <- size_summary %>% 
     ggplot(aes(x = factor(method, levels = rev(heatmap_order)), y = times_sig_and_greater)) +
-    geom_hline(yintercept = 10, color = "#999999", size = 0.1) +
-    geom_hline(yintercept = 20, color = "#999999", size = 0.1) +
+    geom_hline(yintercept = 6, color = "#999999", size = 0.1) +
+    geom_hline(yintercept = 12, color = "#999999", size = 0.1) +
+    geom_hline(yintercept = 18, color = "#999999", size = 0.1) +
+    geom_hline(yintercept = 24, color = "#999999", size = 0.1) +
     geom_hline(yintercept = 30, color = "#999999", size = 0.1) +
+    geom_hline(yintercept = 36, color = "#999999", size = 0.1) +
     geom_col(fill = "lightgray") +
     xlab("Method") +
     ylab("Times Significantly Greater Than Other Methods") +
     geom_text(aes(label = times_sig_and_greater), hjust = -0.1, color = "black") +
-    scale_y_continuous(limits = c(0,30))+
+    scale_y_continuous(limits = c(0,36), breaks = c(0,6,12,18,24,30,36))+
     coord_flip() +
     theme(panel.background = element_rect(fill = "white"), 
           panel.grid.minor = element_blank(), 
@@ -225,7 +213,7 @@ for (ss in unique(rnr$sample_num)){
   
   overall_heatmap_fig <- heatmap + right_half + plot_layout(ncol = 2)
   
-  ggsave(paste0("/Users/kayla/norm_for_RNAseq_coexp/plots/gtex_resampling_",  ss, "_sample_naive_heatmap_fig.png"), 
+  ggsave(paste0("../plots/gtex_resampling_",  ss, "_sample_naive_heatmap.png"), 
         plot = overall_heatmap_fig, width = 18, height = 9)
 }
 ```
@@ -269,11 +257,7 @@ for (ss in unique(rkr$sample_num)){
     ggplot(aes(x = key, y = factor(method, levels = rev(heatmap_order)), fill = value, label = value))+
     geom_tile(color = "white", size = 0.5) +
     #geom_text(aes(label = value)) +
-    scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+    scale_fill_manual(values = label_colors) +
     theme(panel.background = element_blank(),
           panel.grid.major = element_blank(),
           panel.grid.minor = element_blank(),
@@ -286,14 +270,17 @@ for (ss in unique(rkr$sample_num)){
  
   bar_plot <- size_summary %>% 
     ggplot(aes(x = factor(method, levels = rev(heatmap_order)), y = times_sig_and_greater)) +
-    geom_hline(yintercept = 10, color = "#999999", size = 0.1) +
-    geom_hline(yintercept = 20, color = "#999999", size = 0.1) +
+    geom_hline(yintercept = 6, color = "#999999", size = 0.1) +
+    geom_hline(yintercept = 12, color = "#999999", size = 0.1) +
+    geom_hline(yintercept = 18, color = "#999999", size = 0.1) +
+    geom_hline(yintercept = 24, color = "#999999", size = 0.1) +
     geom_hline(yintercept = 30, color = "#999999", size = 0.1) +
+    geom_hline(yintercept = 36, color = "#999999", size = 0.1) +
     geom_col(fill = "lightgray") +
     xlab("Method") +
     ylab("Times Significantly Greater Than Other Methods") +
     geom_text(aes(label = times_sig_and_greater), hjust = -0.1, color = "black") +
-    scale_y_continuous(limits = c(0,30))+
+    scale_y_continuous(limits = c(0,36), breaks = c(0,6,12,18,24,30,36))+
     coord_flip() +
     theme(panel.background = element_rect(fill = "white"), 
           panel.grid.minor = element_blank(), 
@@ -310,7 +297,7 @@ for (ss in unique(rkr$sample_num)){
   
   overall_heatmap_fig <- heatmap + right_half + plot_layout(ncol = 2)
   
-  ggsave(paste0("/Users/kayla/norm_for_RNAseq_coexp/plots/gtex_resampling_",  ss, "_sample_knowledge_heatmap_fig.png"), 
+  ggsave(paste0("../plots/gtex_resampling_",  ss, "_sample_knowledge_heatmap.png"), 
         plot = overall_heatmap_fig, width = 18, height = 9)
 }
 ```

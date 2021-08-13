@@ -15,36 +15,35 @@ library(dichromat)
 library(RColorBrewer)
 ```
 
-```{r include=FALSE}
-gnr <- read_delim("../data/2020-03-19_gtex_naive_results.txt",
-                    delim = "\t", col_names = T)
-gnpr <- read_delim("../data/2020-03-19_prec_recall_gtex_naive_results.txt",
-                   delim = "\t", col_names = T) %>% 
-  filter(recall == 20)
-gkr <- read_delim("../data/2020-03-19_gtex_knowledge_results.txt",
-                    delim = "\t", col_names = T)
-gkpr <- read_delim("../data/2020-03-19_prec_recall_gtex_knowledge_results.txt",
-                   delim = "\t", col_names = T) %>% 
-  filter(recall == 20)
-method_codes <- read_delim("../data/2020-03-19_method_codes.txt",
-                           delim = "\t", col_names = T)
+```{r}
+gnr <- read_delim("../data/final_36_workflows_gtex_naive-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+gkr <- read_delim("../data/final_36_workflows_gtex_knowledge-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
 
-gnr$method <- gsub("quantile", "QNT", gnr$method)
-gnr$method <- gsub("wTO", "WTO", gnr$method)
-gnpr$method <- gsub("quantile", "QNT", gnpr$method)
-gnpr$method <- gsub("wTO", "WTO", gnpr$method)
+snr <- read_delim("../data/final_36_workflows_sra_naive-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+skr <- read_delim("../data/final_36_workflows_sra_knowledge-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
 
-gkr$method <- gsub("quantile", "QNT", gkr$method)
-gkr$method <- gsub("wTO", "WTO", gkr$method)
-gkpr$method <- gsub("quantile", "QNT", gkpr$method)
-gkpr$method <- gsub("wTO", "WTO", gkpr$method)
+rnr <- read_delim("../data/final_36_workflows_gtex-resampling_naive-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+rkr <- read_delim("../data/final_36_workflows_gtex-resampling_knowledge-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
 
-method_codes$method <- gsub("quantile", "QNT", method_codes$method)
-method_codes$method <- gsub("wTO", "WTO", method_codes$method)
+method_codes <- read.table("../data/method_codes.tsv", sep = "\t", header = T)
+
+label_colors <- c(" " = "#eff3ff", "CPM" = "#bdd7e7",
+                  "RPKM" = "#6baed6", "TPM" = "#2171b5",
+                  "  " = "#edf8e9", "QNT" = "#c7e9c0",  "TMM" = "#a1d99b",
+                  "UQ" = "#74c476", "CTF" = "#41ab5d",
+                  "CUF" = "#238b45", "   " = "#feedde",
+                  "CLR" = "#fdbe85", "WTO" = "#fd8d3c")
 ```
 
 ```{r include=FALSE}
-methods_gn_auprc_prior <- gnr %>% 
+# GTEx
+methods_gn_auprc <- gnr %>% 
   select(project, tissue, method, log2_auprc_over_prior) %>% 
   spread(key = method, value = log2_auprc_over_prior) %>% 
   select(-project, -tissue)
@@ -54,12 +53,12 @@ methods_gn_auroc <- gnr %>%
   spread(key = method, value = auROC) %>% 
   select(-project, -tissue)
 
-methods_gn_pr <- gnpr %>% 
-  select(project, tissue, method, log2_precision_over_prior) %>% 
-  spread(key = method, value = log2_precision_over_prior) %>% 
+methods_gn_p20r <- gnr %>% 
+  select(project, tissue, method, log2_p20r) %>% 
+  spread(key = method, value = log2_p20r) %>% 
   select(-project, -tissue)
 
-methods_gk_auprc_prior <- gkr %>% 
+methods_gk_auprc <- gkr %>% 
   select(project, tissue, method, log2_auprc_over_prior) %>% 
   spread(key = method, value = log2_auprc_over_prior) %>% 
   select(-project, -tissue) 
@@ -69,48 +68,13 @@ methods_gk_auroc <- gkr %>%
   spread(key = method, value = auROC) %>% 
   select(-project, -tissue) 
 
-methods_gk_pr <- gkpr %>% 
-  select(project, tissue, method, log2_precision_over_prior) %>% 
-  spread(key = method, value = log2_precision_over_prior) %>% 
+methods_gk_p20r <- gkr %>% 
+  select(project, tissue, method, log2_p20r) %>% 
+  spread(key = method, value = log2_p20r) %>% 
   select(-project, -tissue)
-```
 
-```{r include=FALSE}
-snr <- read_delim("../data/2020-03-19_sra_naive_results.txt",
-                    delim = "\t", col_names = T)
-snpr <- read_delim("../data/2020-03-19_prec_recall_sra_naive_results.txt",
-                   delim = "\t", col_names = T) %>% 
-  filter(recall == 20)
-skr <- read_delim("../data/2020-03-19_sra_knowledge_results.txt",
-                    delim = "\t", col_names = T)
-skpr <- read_delim("../data/2020-03-19_prec_recall_sra_knowledge_results.txt",
-                   delim = "\t", col_names = T) %>% 
-  filter(recall == 20)
-method_codes <- read_delim("../data/2020-03-19_method_codes.txt",
-                           delim = "\t", col_names = T)
-
-snr$method <- gsub("quantile", "QNT", snr$method)
-snr$method <- gsub("wTO", "WTO", snr$method)
-snpr$method <- gsub("quantile", "QNT", snpr$method)
-snpr$method <- gsub("wTO", "WTO", snpr$method)
-
-skr$method <- gsub("quantile", "QNT", skr$method)
-skr$method <- gsub("wTO", "WTO", skr$method)
-skpr$method <- gsub("quantile", "QNT", skpr$method)
-skpr$method <- gsub("wTO", "WTO", skpr$method)
-
-method_codes$method <- gsub("quantile", "QNT", method_codes$method)
-method_codes$method <- gsub("wTO", "WTO", method_codes$method)
-
-#remove spinal_cord
-snr <- snr %>% filter(tissue != "spinal_cord")
-skr <- skr %>% filter(tissue != "spinal_cord")
-snpr <- snpr %>% filter(tissue != "spinal_cord")
-skpr <- skpr %>% filter(tissue != "spinal_cord")
-```
-
-```{r include=FALSE}
-methods_sn_auprc_prior <- snr %>% 
+# SRA
+methods_sn_auprc <- snr %>% 
   select(project, tissue, method, log2_auprc_over_prior) %>% 
   spread(key = method, value = log2_auprc_over_prior) %>% 
   select(-project, -tissue)
@@ -120,12 +84,12 @@ methods_sn_auroc <- snr %>%
   spread(key = method, value = auROC) %>% 
   select(-project, -tissue)
 
-methods_sn_pr <- snpr %>% 
-  select(project, tissue, method, log2_precision_over_prior) %>% 
-  spread(key = method, value = log2_precision_over_prior) %>% 
+methods_sn_p20r <- snr %>% 
+  select(project, tissue, method, log2_p20r) %>% 
+  spread(key = method, value = log2_p20r) %>% 
   select(-project, -tissue)
 
-methods_sk_auprc_prior <- skr %>% 
+methods_sk_auprc <- skr %>% 
   select(project, tissue, method, log2_auprc_over_prior) %>% 
   spread(key = method, value = log2_auprc_over_prior) %>% 
   select(-project, -tissue) 
@@ -135,24 +99,26 @@ methods_sk_auroc <- skr %>%
   spread(key = method, value = auROC) %>% 
   select(-project, -tissue) 
 
-methods_sk_pr <- skpr %>% 
-  select(project, tissue, method, log2_precision_over_prior) %>% 
-  spread(key = method, value = log2_precision_over_prior) %>% 
+methods_sk_p20r <- skr %>% 
+  select(project, tissue, method, log2_p20r) %>% 
+  spread(key = method, value = log2_p20r) %>% 
   select(-project, -tissue)
 ```
 
 # Functions
 ```{r include=FALSE}
-#functions to build heatmap
+# Functions to create heatmaps
 get_times_greater_than_matrix <- function(meth_df){
-  #df should be methods_* df (each row is performance on given dataset)
-  counts_output <- matrix(rep(0, 900), nrow = 30, ncol = 30)
+  # meth_df should be methods_* df (each row is performance on given dataset)
+  # meth_df is in alphabetical order
+  n_methods <- ncol(meth_df)
+  counts_output <- matrix(rep(0, (n_methods * n_methods)), nrow = n_methods, ncol = n_methods)
   colnames(counts_output) <- colnames(meth_df)
   rownames(counts_output) <- colnames(meth_df)
   
-  for(num in 1:30){
+  for(num in 1:n_methods){
   a <- pull(meth_df, num)
-  for(val in 1:30){
+  for(val in 1:n_methods){
     if (num == val){
       counts_output[val, num] <- 0.5
       next
@@ -171,14 +137,15 @@ get_significance_matrix <- function(df, performance_col_position, method_col_pos
   sig_output <- pairwise.wilcox.test(x = pull(df, performance_col_position),
                                      g = pull(df, method_col_position),
                                      paired = TRUE,
-                                     p.adjust.method = "BH")$p.value
+                                     p.adjust.method = "BH")
+  sig_output <- sig_output$p.value
   
   #add row/col to make 30 by 30
   CLR <- sig_output[1,]
   CLR[1] <- NA
   sig_output <- rbind(CLR, sig_output)
-  WTO <- sig_output[,29]
-  WTO[30] <- NA
+  WTO <- sig_output[,35]
+  WTO[36] <- NA
   sig_output <- cbind(sig_output, WTO)
   
   #make symmetric
@@ -186,7 +153,8 @@ get_significance_matrix <- function(df, performance_col_position, method_col_pos
   sig_output <- Matrix::forceSymmetric(sig_output, uplo = "L")
   sig_output <- as.matrix(sig_output)
   #replace p vals with sig/not sig
-  sig_wilcox_gtex_naive <- ifelse(sig_output < 0.01, "*", " ")
+  sig_wilcox <- ifelse(sig_output < 0.01, "*", " ")
+  return(sig_wilcox)
 }
 
 get_method_times_sig_greater <- function(times_matrix, sig_matrix){
@@ -196,13 +164,13 @@ get_method_times_sig_greater <- function(times_matrix, sig_matrix){
   times_greater_than_tibble <- as_tibble(times_matrix)
   times_greater_than_tibble$method_one <- colnames(times_matrix)
   times_greater_than_tibble <- times_greater_than_tibble %>% 
-    gather(key = method_two, value = times_method_one_is_greater_than_method_two, 1:30)
+    gather(key = method_two, value = times_method_one_is_greater_than_method_two, 1:36)
   #make sig_matrix into tibble and get times corrected wilcox p value was
   #significant between method_one and method_two
   sig_wilcox_tibble <-  as_tibble(sig_matrix)
   sig_wilcox_tibble$method_one <- colnames(sig_matrix)
   sig_wilcox_tibble <- sig_wilcox_tibble %>%
-    gather(key = method_two, value = significance, 1:30)
+    gather(key = method_two, value = significance, 1:36)
   sig_wilcox_tibble$significance <- ifelse(sig_wilcox_tibble$significance == "*",
                                            T, F)
   
@@ -262,7 +230,7 @@ heatmap_legend_all <- ggplot(r, aes(y=y, x=factor(x), fill = factor(x))) +
 ## log<sub>2</sub>(auPRC/prior)
 ```{r include=FALSE}
 #get matrices/tibble/heatmap order for naive plot
-l2_auprc_prior_naive_times_mat <- get_times_greater_than_matrix(methods_gn_auprc_prior)
+l2_auprc_prior_naive_times_mat <- get_times_greater_than_matrix(methods_gn_auprc)
 l2_auprc_prior_naive_sig_mat <- get_significance_matrix(df = gnr, performance_col_position = 4, method_col_position = 3)
 l2_auprc_prior_naive_method_num_times_sig_greater <- get_method_times_sig_greater(times_matrix = l2_auprc_prior_naive_times_mat,
                                                                                   sig_matrix = l2_auprc_prior_naive_sig_mat)
@@ -275,7 +243,7 @@ l2_auprc_prior_naive_sig_mat <- l2_auprc_prior_naive_sig_mat[l2_auprc_prior_naiv
 l2_auprc_prior_naive_sig_mat <- l2_auprc_prior_naive_sig_mat[,l2_auprc_prior_naive_heatmap_order]
 
 #getmatrices/tibble/heatmap order for knowledge plot
-l2_auprc_prior_knowledge_times_mat <- get_times_greater_than_matrix(methods_gk_auprc_prior)
+l2_auprc_prior_knowledge_times_mat <- get_times_greater_than_matrix(methods_gk_auprc)
 l2_auprc_prior_knowledge_sig_mat <- get_significance_matrix(df = gkr, performance_col_position = 4, method_col_position = 3)
 l2_auprc_prior_knowledge_method_num_times_sig_greater <- get_method_times_sig_greater(times_matrix = l2_auprc_prior_knowledge_times_mat,
                                                                                       sig_matrix = l2_auprc_prior_knowledge_sig_mat)
@@ -299,12 +267,7 @@ l2_auprc_prior_naive_heatmap <- as.ggplot(l2_auprc_prior_naive_heatmap)
 l2_auprc_prior_naive_row_labels <- method_codes %>% 
   ggplot(aes(x = key, y = factor(method, levels = rev(l2_auprc_prior_naive_heatmap_order)), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
-  #geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values = label_colors) +
   theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -317,14 +280,17 @@ l2_auprc_prior_naive_row_labels <- method_codes %>%
  
 l2_auprc_prior_naive_bar_plot <- l2_auprc_prior_naive_method_num_times_sig_greater %>% 
   ggplot(aes(x = factor(method, levels = rev(l2_auprc_prior_naive_heatmap_order)), y = times_sig_and_greater)) +
-  geom_hline(yintercept = 10, color = "#999999", size = 0.1) +
-  geom_hline(yintercept = 20, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 6, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 12, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 18, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 24, color = "#999999", size = 0.1) +
   geom_hline(yintercept = 30, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 36, color = "#999999", size = 0.1) +
   geom_col(fill = "lightgray") +
   xlab("Method") +
   ylab("Times Significantly Greater Than Other Methods") +
   geom_text(aes(label = times_sig_and_greater), hjust = -0.1, color = "black") +
-  scale_y_continuous(limits = c(0,30))+
+  scale_y_continuous(limits = c(0,36), breaks = c(0,6,12,18,24,30,36))+
   coord_flip() +
   theme(panel.background = element_rect(fill = "white"), 
         panel.grid.minor = element_blank(), 
@@ -342,7 +308,7 @@ l2_auprc_prior_naive_overall_right_half <- ((l2_auprc_prior_naive_row_labels + l
   plot_layout(heights = c(89,11))
 l2_auprc_prior_naive_overall_heatmap_fig <- l2_auprc_prior_naive_heatmap + l2_auprc_prior_naive_overall_right_half +
   plot_layout(ncol = 2)
-ggsave("/Users/kayla/norm_for_RNAseq_coexp/plots/l2_auprc_prior_naive_overall_heatmap_fig.png", 
+ggsave("../plots/gtex_auprc_naive_heatmap.png", 
        plot = l2_auprc_prior_naive_overall_heatmap_fig, width = 18, height = 9)
 ```
 
@@ -358,11 +324,7 @@ l2_auprc_prior_knowledge_row_labels <- method_codes %>%
   ggplot(aes(x = key, y = factor(method, levels = rev(l2_auprc_prior_knowledge_heatmap_order)), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
   #geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values = label_colors) +
   theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -375,14 +337,17 @@ l2_auprc_prior_knowledge_row_labels <- method_codes %>%
  
 l2_auprc_prior_knowledge_bar_plot <- l2_auprc_prior_knowledge_method_num_times_sig_greater %>% 
   ggplot(aes(x = factor(method, levels = rev(l2_auprc_prior_knowledge_heatmap_order)), y = times_sig_and_greater)) +
-  geom_hline(yintercept = 10, color = "#999999", size = 0.1) +
-  geom_hline(yintercept = 20, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 6, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 12, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 18, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 24, color = "#999999", size = 0.1) +
   geom_hline(yintercept = 30, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 36, color = "#999999", size = 0.1) +
   geom_col(fill = "lightgray") +
   xlab("Method") +
   ylab("Times Significantly Greater Than Other Methods") +
   geom_text(aes(label = times_sig_and_greater), hjust = -0.1, color = "black") +
-  scale_y_continuous(limits = c(0,30))+
+  scale_y_continuous(limits = c(0,36), breaks = c(0,6,12,18,24,30,36))+
   coord_flip() +
   theme(panel.background = element_rect(fill = "white"), 
         panel.grid.minor = element_blank(), 
@@ -400,7 +365,7 @@ l2_auprc_prior_knowledge_overall_right_half <- ((l2_auprc_prior_knowledge_row_la
   plot_layout(heights = c(89,11))
 l2_auprc_prior_knowledge_overall_heatmap_fig <- l2_auprc_prior_knowledge_heatmap + l2_auprc_prior_knowledge_overall_right_half +
   plot_layout(ncol = 2)
-ggsave("/Users/kayla/norm_for_RNAseq_coexp/plots/l2_auprc_prior_knowledge_overall_heatmap_fig.png", 
+ggsave("../plots/gtex_auprc_knowledge_heatmap.png", 
        plot = l2_auprc_prior_knowledge_overall_heatmap_fig, width = 18, height = 9)
 ```
 
@@ -421,7 +386,7 @@ auroc_naive_sig_mat <- auroc_naive_sig_mat[,auroc_naive_heatmap_order]
 
 #getmatrices/tibble/heatmap order for knowledge plot
 auroc_knowledge_times_mat <- get_times_greater_than_matrix(methods_gk_auroc)
-auroc_knowledge_sig_mat <- get_significance_matrix(df = gkr, performance_col_position = 6, method_col_position = 3)
+auroc_knowledge_sig_mat <- get_significance_matrix(df = gkr, performance_col_position = 5, method_col_position = 3)
 auroc_knowledge_method_num_times_sig_greater <- get_method_times_sig_greater(times_matrix = auroc_knowledge_times_mat,
                                                                                       sig_matrix = auroc_knowledge_sig_mat)
 auroc_knowledge_heatmap_order <- get_heatmap_order(method_summary = auroc_knowledge_method_num_times_sig_greater,
@@ -444,12 +409,7 @@ auroc_naive_heatmap <- as.ggplot(auroc_naive_heatmap)
 auroc_naive_row_labels <- method_codes %>% 
   ggplot(aes(x = key, y = factor(method, levels = rev(auroc_naive_heatmap_order)), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
-  #geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values = label_colors) +
   theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -462,14 +422,17 @@ auroc_naive_row_labels <- method_codes %>%
  
 auroc_naive_bar_plot <- auroc_naive_method_num_times_sig_greater %>% 
   ggplot(aes(x = factor(method, levels = rev(auroc_naive_heatmap_order)), y = times_sig_and_greater)) +
-  geom_hline(yintercept = 10, color = "#999999", size = 0.1) +
-  geom_hline(yintercept = 20, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 6, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 12, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 18, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 24, color = "#999999", size = 0.1) +
   geom_hline(yintercept = 30, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 36, color = "#999999", size = 0.1) +
   geom_col(fill = "lightgray") +
   xlab("Method") +
   ylab("Times Significantly Greater Than Other Methods") +
   geom_text(aes(label = times_sig_and_greater), hjust = -0.1, color = "black") +
-  scale_y_continuous(limits = c(0,30))+
+  scale_y_continuous(limits = c(0,36), breaks = c(0,6,12,18,24,30,36))+
   coord_flip() +
   theme(panel.background = element_rect(fill = "white"), 
         panel.grid.minor = element_blank(), 
@@ -487,7 +450,7 @@ auroc_naive_overall_right_half <- ((auroc_naive_row_labels + auroc_naive_bar_plo
   plot_layout(heights = c(89,11))
 auroc_naive_overall_heatmap_fig <- auroc_naive_heatmap + auroc_naive_overall_right_half +
   plot_layout(ncol = 2)
-ggsave("/Users/kayla/norm_for_RNAseq_coexp/plots/auroc_naive_overall_heatmap_fig.png", 
+ggsave("../plots/gtex_auroc_naive_heatmap.png", 
        plot = auroc_naive_overall_heatmap_fig, width = 18, height = 9)
 ```
 
@@ -503,11 +466,7 @@ auroc_knowledge_row_labels <- method_codes %>%
   ggplot(aes(x = key, y = factor(method, levels = rev(auroc_knowledge_heatmap_order)), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
   #geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values = label_colors) +
   theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -520,14 +479,17 @@ auroc_knowledge_row_labels <- method_codes %>%
  
 auroc_knowledge_bar_plot <- auroc_knowledge_method_num_times_sig_greater %>% 
   ggplot(aes(x = factor(method, levels = rev(auroc_knowledge_heatmap_order)), y = times_sig_and_greater)) +
-  geom_hline(yintercept = 10, color = "#999999", size = 0.1) +
-  geom_hline(yintercept = 20, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 6, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 12, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 18, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 24, color = "#999999", size = 0.1) +
   geom_hline(yintercept = 30, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 36, color = "#999999", size = 0.1) +
   geom_col(fill = "lightgray") +
   xlab("Method") +
   ylab("Times Significantly Greater Than Other Methods") +
   geom_text(aes(label = times_sig_and_greater), hjust = -0.1, color = "black") +
-  scale_y_continuous(limits = c(0,30))+
+  scale_y_continuous(limits = c(0,36), breaks = c(0,6,12,18,24,30,36))+
   coord_flip() +
   theme(panel.background = element_rect(fill = "white"), 
         panel.grid.minor = element_blank(), 
@@ -545,15 +507,15 @@ auroc_knowledge_overall_right_half <- ((auroc_knowledge_row_labels + auroc_knowl
   plot_layout(heights = c(89,11))
 auroc_knowledge_overall_heatmap_fig <- auroc_knowledge_heatmap + auroc_knowledge_overall_right_half +
   plot_layout(ncol = 2)
-ggsave("/Users/kayla/norm_for_RNAseq_coexp/plots/auroc_knowledge_overall_heatmap_fig.png", 
+ggsave("../plots/gtex_auroc_knowledge_heatmap.png", 
        plot = auroc_knowledge_overall_heatmap_fig, width = 18, height = 9)
 ```
 
 ## log<sub>2</sub>(precision/prior) at 20% recall
 ```{r include=FALSE}
 #get matrices/tibble/heatmap order for naive plot
-l2_prec_at_recall20_naive_times_mat <- get_times_greater_than_matrix(methods_gn_pr)
-l2_prec_at_recall20_naive_sig_mat <- get_significance_matrix(df = gnpr, performance_col_position = 7, method_col_position = 3)
+l2_prec_at_recall20_naive_times_mat <- get_times_greater_than_matrix(methods_gn_p20r)
+l2_prec_at_recall20_naive_sig_mat <- get_significance_matrix(df = gnr, performance_col_position = 6, method_col_position = 3)
 l2_prec_at_recall20_naive_method_num_times_sig_greater <- get_method_times_sig_greater(times_matrix = l2_prec_at_recall20_naive_times_mat,
                                                                                   sig_matrix = l2_prec_at_recall20_naive_sig_mat)
 l2_prec_at_recall20_naive_heatmap_order <- get_heatmap_order(method_summary = l2_prec_at_recall20_naive_method_num_times_sig_greater,
@@ -565,8 +527,8 @@ l2_prec_at_recall20_naive_sig_mat <- l2_prec_at_recall20_naive_sig_mat[l2_prec_a
 l2_prec_at_recall20_naive_sig_mat <- l2_prec_at_recall20_naive_sig_mat[,l2_prec_at_recall20_naive_heatmap_order]
 
 #getmatrices/tibble/heatmap order for knowledge plot
-l2_prec_at_recall20_knowledge_times_mat <- get_times_greater_than_matrix(methods_gk_pr)
-l2_prec_at_recall20_knowledge_sig_mat <- get_significance_matrix(df = gkpr, performance_col_position = 10, method_col_position = 3)
+l2_prec_at_recall20_knowledge_times_mat <- get_times_greater_than_matrix(methods_gk_p20r)
+l2_prec_at_recall20_knowledge_sig_mat <- get_significance_matrix(df = gkr, performance_col_position = 6, method_col_position = 3)
 l2_prec_at_recall20_knowledge_method_num_times_sig_greater <- get_method_times_sig_greater(times_matrix = l2_prec_at_recall20_knowledge_times_mat,
                                                                                       sig_matrix = l2_prec_at_recall20_knowledge_sig_mat)
 l2_prec_at_recall20_knowledge_heatmap_order <- get_heatmap_order(method_summary = l2_prec_at_recall20_knowledge_method_num_times_sig_greater,
@@ -589,12 +551,7 @@ l2_prec_at_recall20_naive_heatmap <- as.ggplot(l2_prec_at_recall20_naive_heatmap
 l2_prec_at_recall20_naive_row_labels <- method_codes %>% 
   ggplot(aes(x = key, y = factor(method, levels = rev(l2_prec_at_recall20_naive_heatmap_order)), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
-  #geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values = label_colors) +
   theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -607,14 +564,17 @@ l2_prec_at_recall20_naive_row_labels <- method_codes %>%
  
 l2_prec_at_recall20_naive_bar_plot <- l2_prec_at_recall20_naive_method_num_times_sig_greater %>% 
   ggplot(aes(x = factor(method, levels = rev(l2_prec_at_recall20_naive_heatmap_order)), y = times_sig_and_greater)) +
-  geom_hline(yintercept = 10, color = "#999999", size = 0.1) +
-  geom_hline(yintercept = 20, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 6, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 12, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 18, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 24, color = "#999999", size = 0.1) +
   geom_hline(yintercept = 30, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 36, color = "#999999", size = 0.1) +
   geom_col(fill = "lightgray") +
   xlab("Method") +
   ylab("Times Significantly Greater Than Other Methods") +
   geom_text(aes(label = times_sig_and_greater), hjust = -0.1, color = "black") +
-  scale_y_continuous(limits = c(0,30))+
+  scale_y_continuous(limits = c(0,36), breaks = c(0,6,12,18,24,30,36))+
   coord_flip() +
   theme(panel.background = element_rect(fill = "white"), 
         panel.grid.minor = element_blank(), 
@@ -632,7 +592,7 @@ l2_prec_at_recall20_naive_overall_right_half <- ((l2_prec_at_recall20_naive_row_
   plot_layout(heights = c(89,11))
 l2_prec_at_recall20_naive_overall_heatmap_fig <- l2_prec_at_recall20_naive_heatmap + l2_prec_at_recall20_naive_overall_right_half +
   plot_layout(ncol = 2)
-ggsave("/Users/kayla/norm_for_RNAseq_coexp/plots/l2_prec_at_recall20_naive_overall_heatmap_fig.png", 
+ggsave("../plots/gtex_p20r_naive_heatmap.png", 
        plot = l2_prec_at_recall20_naive_overall_heatmap_fig, width = 18, height = 9)
 ```
 
@@ -648,11 +608,7 @@ l2_prec_at_recall20_knowledge_row_labels <- method_codes %>%
   ggplot(aes(x = key, y = factor(method, levels = rev(l2_prec_at_recall20_knowledge_heatmap_order)), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
   #geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values = label_colors) +
   theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -665,14 +621,17 @@ l2_prec_at_recall20_knowledge_row_labels <- method_codes %>%
  
 l2_prec_at_recall20_knowledge_bar_plot <- l2_prec_at_recall20_knowledge_method_num_times_sig_greater %>% 
   ggplot(aes(x = factor(method, levels = rev(l2_prec_at_recall20_knowledge_heatmap_order)), y = times_sig_and_greater)) +
-  geom_hline(yintercept = 10, color = "#999999", size = 0.1) +
-  geom_hline(yintercept = 20, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 6, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 12, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 18, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 24, color = "#999999", size = 0.1) +
   geom_hline(yintercept = 30, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 36, color = "#999999", size = 0.1) +
   geom_col(fill = "lightgray") +
   xlab("Method") +
   ylab("Times Significantly Greater Than Other Methods") +
   geom_text(aes(label = times_sig_and_greater), hjust = -0.1, color = "black") +
-  scale_y_continuous(limits = c(0,30))+
+  scale_y_continuous(limits = c(0,36), breaks = c(0,6,12,18,24,30,36))+
   coord_flip() +
   theme(panel.background = element_rect(fill = "white"), 
         panel.grid.minor = element_blank(), 
@@ -690,7 +649,7 @@ l2_prec_at_recall20_knowledge_overall_right_half <- ((l2_prec_at_recall20_knowle
   plot_layout(heights = c(89,11))
 l2_prec_at_recall20_knowledge_overall_heatmap_fig <- l2_prec_at_recall20_knowledge_heatmap + l2_prec_at_recall20_knowledge_overall_right_half +
   plot_layout(ncol = 2)
-ggsave("/Users/kayla/norm_for_RNAseq_coexp/plots/l2_prec_at_recall20_knowledge_overall_heatmap_fig.png", 
+ggsave("../plots/gtex_p20r_knowledge_heatmap.png", 
        plot = l2_prec_at_recall20_knowledge_overall_heatmap_fig, width = 18, height = 9)
 ```
 
@@ -698,7 +657,7 @@ ggsave("/Users/kayla/norm_for_RNAseq_coexp/plots/l2_prec_at_recall20_knowledge_o
 ## log<sub>2</sub>(auPRC/prior)
 ```{r include=FALSE}
 #get matrices/tibble/heatmap order for naive plot
-l2_auprc_prior_naive_times_mat <- get_times_greater_than_matrix(methods_sn_auprc_prior)
+l2_auprc_prior_naive_times_mat <- get_times_greater_than_matrix(methods_sn_auprc)
 l2_auprc_prior_naive_sig_mat <- get_significance_matrix(df = snr, performance_col_position = 4, method_col_position = 3)
 l2_auprc_prior_naive_method_num_times_sig_greater <- get_method_times_sig_greater(times_matrix = l2_auprc_prior_naive_times_mat,
                                                                                   sig_matrix = l2_auprc_prior_naive_sig_mat)
@@ -711,7 +670,7 @@ l2_auprc_prior_naive_sig_mat <- l2_auprc_prior_naive_sig_mat[l2_auprc_prior_naiv
 l2_auprc_prior_naive_sig_mat <- l2_auprc_prior_naive_sig_mat[,l2_auprc_prior_naive_heatmap_order]
 
 #getmatrices/tibble/heatmap order for knowledge plot
-l2_auprc_prior_knowledge_times_mat <- get_times_greater_than_matrix(methods_sk_auprc_prior)
+l2_auprc_prior_knowledge_times_mat <- get_times_greater_than_matrix(methods_sk_auprc)
 l2_auprc_prior_knowledge_sig_mat <- get_significance_matrix(df = skr, performance_col_position = 4, method_col_position = 3)
 l2_auprc_prior_knowledge_method_num_times_sig_greater <- get_method_times_sig_greater(times_matrix = l2_auprc_prior_knowledge_times_mat,
                                                                                       sig_matrix = l2_auprc_prior_knowledge_sig_mat)
@@ -735,12 +694,7 @@ l2_auprc_prior_naive_heatmap <- as.ggplot(l2_auprc_prior_naive_heatmap)
 l2_auprc_prior_naive_row_labels <- method_codes %>% 
   ggplot(aes(x = key, y = factor(method, levels = rev(l2_auprc_prior_naive_heatmap_order)), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
-  #geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values =label_colors) +
   theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -753,14 +707,17 @@ l2_auprc_prior_naive_row_labels <- method_codes %>%
  
 l2_auprc_prior_naive_bar_plot <- l2_auprc_prior_naive_method_num_times_sig_greater %>% 
   ggplot(aes(x = factor(method, levels = rev(l2_auprc_prior_naive_heatmap_order)), y = times_sig_and_greater)) +
-  geom_hline(yintercept = 10, color = "#999999", size = 0.1) +
-  geom_hline(yintercept = 20, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 6, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 12, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 18, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 24, color = "#999999", size = 0.1) +
   geom_hline(yintercept = 30, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 36, color = "#999999", size = 0.1) +
   geom_col(fill = "lightgray") +
   xlab("Method") +
   ylab("Times Significantly Greater Than Other Methods") +
   geom_text(aes(label = times_sig_and_greater), hjust = -0.1, color = "black") +
-  scale_y_continuous(limits = c(0,30))+
+  scale_y_continuous(limits = c(0,36), breaks = c(0,6,12,18,24,30,36))+
   coord_flip() +
   theme(panel.background = element_rect(fill = "white"), 
         panel.grid.minor = element_blank(), 
@@ -778,7 +735,7 @@ l2_auprc_prior_naive_overall_right_half <- ((l2_auprc_prior_naive_row_labels + l
   plot_layout(heights = c(89,11))
 l2_auprc_prior_naive_overall_heatmap_fig <- l2_auprc_prior_naive_heatmap + l2_auprc_prior_naive_overall_right_half +
   plot_layout(ncol = 2)
-ggsave("/Users/kayla/norm_for_RNAseq_coexp/plots/sra_l2_auprc_prior_naive_overall_heatmap_fig.png", 
+ggsave("../plots/sra_auprc_naive_heatmap.png", 
        plot = l2_auprc_prior_naive_overall_heatmap_fig, width = 18, height = 9)
 ```
 
@@ -794,11 +751,7 @@ l2_auprc_prior_knowledge_row_labels <- method_codes %>%
   ggplot(aes(x = key, y = factor(method, levels = rev(l2_auprc_prior_knowledge_heatmap_order)), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
   #geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values = label_colors) +
   theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -811,14 +764,17 @@ l2_auprc_prior_knowledge_row_labels <- method_codes %>%
  
 l2_auprc_prior_knowledge_bar_plot <- l2_auprc_prior_knowledge_method_num_times_sig_greater %>% 
   ggplot(aes(x = factor(method, levels = rev(l2_auprc_prior_knowledge_heatmap_order)), y = times_sig_and_greater)) +
-  geom_hline(yintercept = 10, color = "#999999", size = 0.1) +
-  geom_hline(yintercept = 20, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 6, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 12, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 18, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 24, color = "#999999", size = 0.1) +
   geom_hline(yintercept = 30, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 36, color = "#999999", size = 0.1) +
   geom_col(fill = "lightgray") +
   xlab("Method") +
   ylab("Times Significantly Greater Than Other Methods") +
   geom_text(aes(label = times_sig_and_greater), hjust = -0.1, color = "black") +
-  scale_y_continuous(limits = c(0,30))+
+  scale_y_continuous(limits = c(0,36), breaks = c(0,6,12,18,24,30,36))+
   coord_flip() +
   theme(panel.background = element_rect(fill = "white"), 
         panel.grid.minor = element_blank(), 
@@ -836,7 +792,7 @@ l2_auprc_prior_knowledge_overall_right_half <- ((l2_auprc_prior_knowledge_row_la
   plot_layout(heights = c(89,11))
 l2_auprc_prior_knowledge_overall_heatmap_fig <- l2_auprc_prior_knowledge_heatmap + l2_auprc_prior_knowledge_overall_right_half +
   plot_layout(ncol = 2)
-ggsave("/Users/kayla/norm_for_RNAseq_coexp/plots/sra_l2_auprc_prior_knowledge_overall_heatmap_fig.png", 
+ggsave("../plots/sra_auprc_knowledge_heatmap.png", 
        plot = l2_auprc_prior_knowledge_overall_heatmap_fig, width = 18, height = 9)
 ```
 
@@ -857,7 +813,7 @@ auroc_naive_sig_mat <- auroc_naive_sig_mat[,auroc_naive_heatmap_order]
 
 #getmatrices/tibble/heatmap order for knowledge plot
 auroc_knowledge_times_mat <- get_times_greater_than_matrix(methods_sk_auroc)
-auroc_knowledge_sig_mat <- get_significance_matrix(df = skr, performance_col_position = 6, method_col_position = 3)
+auroc_knowledge_sig_mat <- get_significance_matrix(df = skr, performance_col_position = 5, method_col_position = 3)
 auroc_knowledge_method_num_times_sig_greater <- get_method_times_sig_greater(times_matrix = auroc_knowledge_times_mat,
                                                                                       sig_matrix = auroc_knowledge_sig_mat)
 auroc_knowledge_heatmap_order <- get_heatmap_order(method_summary = auroc_knowledge_method_num_times_sig_greater,
@@ -881,11 +837,7 @@ auroc_naive_row_labels <- method_codes %>%
   ggplot(aes(x = key, y = factor(method, levels = rev(auroc_naive_heatmap_order)), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
   #geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values = label_colors) +
   theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -898,14 +850,17 @@ auroc_naive_row_labels <- method_codes %>%
  
 auroc_naive_bar_plot <- auroc_naive_method_num_times_sig_greater %>% 
   ggplot(aes(x = factor(method, levels = rev(auroc_naive_heatmap_order)), y = times_sig_and_greater)) +
-  geom_hline(yintercept = 10, color = "#999999", size = 0.1) +
-  geom_hline(yintercept = 20, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 6, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 12, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 18, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 24, color = "#999999", size = 0.1) +
   geom_hline(yintercept = 30, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 36, color = "#999999", size = 0.1) +
   geom_col(fill = "lightgray") +
   xlab("Method") +
   ylab("Times Significantly Greater Than Other Methods") +
   geom_text(aes(label = times_sig_and_greater), hjust = -0.1, color = "black") +
-  scale_y_continuous(limits = c(0,30))+
+  scale_y_continuous(limits = c(0,36), breaks = c(0,6,12,18,24,30,36))+
   coord_flip() +
   theme(panel.background = element_rect(fill = "white"), 
         panel.grid.minor = element_blank(), 
@@ -923,7 +878,7 @@ auroc_naive_overall_right_half <- ((auroc_naive_row_labels + auroc_naive_bar_plo
   plot_layout(heights = c(89,11))
 auroc_naive_overall_heatmap_fig <- auroc_naive_heatmap + auroc_naive_overall_right_half +
   plot_layout(ncol = 2)
-ggsave("/Users/kayla/norm_for_RNAseq_coexp/plots/sra_auroc_naive_overall_heatmap_fig.png", 
+ggsave("../plots/sra_auroc_naive_heatmap.png", 
        plot = auroc_naive_overall_heatmap_fig, width = 18, height = 9)
 ```
 
@@ -939,11 +894,7 @@ auroc_knowledge_row_labels <- method_codes %>%
   ggplot(aes(x = key, y = factor(method, levels = rev(auroc_knowledge_heatmap_order)), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
   #geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values = label_colors) +
   theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -956,14 +907,17 @@ auroc_knowledge_row_labels <- method_codes %>%
  
 auroc_knowledge_bar_plot <- auroc_knowledge_method_num_times_sig_greater %>% 
   ggplot(aes(x = factor(method, levels = rev(auroc_knowledge_heatmap_order)), y = times_sig_and_greater)) +
-  geom_hline(yintercept = 10, color = "#999999", size = 0.1) +
-  geom_hline(yintercept = 20, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 6, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 12, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 18, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 24, color = "#999999", size = 0.1) +
   geom_hline(yintercept = 30, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 36, color = "#999999", size = 0.1) +
   geom_col(fill = "lightgray") +
   xlab("Method") +
   ylab("Times Significantly Greater Than Other Methods") +
   geom_text(aes(label = times_sig_and_greater), hjust = -0.1, color = "black") +
-  scale_y_continuous(limits = c(0,30))+
+  scale_y_continuous(limits = c(0,36), breaks = c(0,6,12,18,24,30,36))+
   coord_flip() +
   theme(panel.background = element_rect(fill = "white"), 
         panel.grid.minor = element_blank(), 
@@ -981,15 +935,15 @@ auroc_knowledge_overall_right_half <- ((auroc_knowledge_row_labels + auroc_knowl
   plot_layout(heights = c(89,11))
 auroc_knowledge_overall_heatmap_fig <- auroc_knowledge_heatmap + auroc_knowledge_overall_right_half +
   plot_layout(ncol = 2)
-ggsave("/Users/kayla/norm_for_RNAseq_coexp/plots/sra_auroc_knowledge_overall_heatmap_fig.png", 
+ggsave("../plots/sra_auroc_knowledge_heatmap.png", 
        plot = auroc_knowledge_overall_heatmap_fig, width = 18, height = 9)
 ```
 
 ## log<sub>2</sub>(precision/prior) at 20% recall
 ```{r include=FALSE}
 #get matrices/tibble/heatmap order for naive plot
-l2_prec_at_recall20_naive_times_mat <- get_times_greater_than_matrix(methods_sn_pr)
-l2_prec_at_recall20_naive_sig_mat <- get_significance_matrix(df = snpr, performance_col_position = 7, method_col_position = 3)
+l2_prec_at_recall20_naive_times_mat <- get_times_greater_than_matrix(methods_sn_p20r)
+l2_prec_at_recall20_naive_sig_mat <- get_significance_matrix(df = snr, performance_col_position = 6, method_col_position = 3)
 l2_prec_at_recall20_naive_method_num_times_sig_greater <- get_method_times_sig_greater(times_matrix = l2_prec_at_recall20_naive_times_mat,
                                                                                   sig_matrix = l2_prec_at_recall20_naive_sig_mat)
 l2_prec_at_recall20_naive_heatmap_order <- get_heatmap_order(method_summary = l2_prec_at_recall20_naive_method_num_times_sig_greater,
@@ -1001,8 +955,8 @@ l2_prec_at_recall20_naive_sig_mat <- l2_prec_at_recall20_naive_sig_mat[l2_prec_a
 l2_prec_at_recall20_naive_sig_mat <- l2_prec_at_recall20_naive_sig_mat[,l2_prec_at_recall20_naive_heatmap_order]
 
 #getmatrices/tibble/heatmap order for knowledge plot
-l2_prec_at_recall20_knowledge_times_mat <- get_times_greater_than_matrix(methods_sk_pr)
-l2_prec_at_recall20_knowledge_sig_mat <- get_significance_matrix(df = skpr, performance_col_position = 10, method_col_position = 3)
+l2_prec_at_recall20_knowledge_times_mat <- get_times_greater_than_matrix(methods_sk_p20r)
+l2_prec_at_recall20_knowledge_sig_mat <- get_significance_matrix(df = skr, performance_col_position = 6, method_col_position = 3)
 l2_prec_at_recall20_knowledge_method_num_times_sig_greater <- get_method_times_sig_greater(times_matrix = l2_prec_at_recall20_knowledge_times_mat,
                                                                                       sig_matrix = l2_prec_at_recall20_knowledge_sig_mat)
 l2_prec_at_recall20_knowledge_heatmap_order <- get_heatmap_order(method_summary = l2_prec_at_recall20_knowledge_method_num_times_sig_greater,
@@ -1026,11 +980,7 @@ l2_prec_at_recall20_naive_row_labels <- method_codes %>%
   ggplot(aes(x = key, y = factor(method, levels = rev(l2_prec_at_recall20_naive_heatmap_order)), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
   #geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values = label_colors) +
   theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -1043,14 +993,17 @@ l2_prec_at_recall20_naive_row_labels <- method_codes %>%
  
 l2_prec_at_recall20_naive_bar_plot <- l2_prec_at_recall20_naive_method_num_times_sig_greater %>% 
   ggplot(aes(x = factor(method, levels = rev(l2_prec_at_recall20_naive_heatmap_order)), y = times_sig_and_greater)) +
-  geom_hline(yintercept = 10, color = "#999999", size = 0.1) +
-  geom_hline(yintercept = 20, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 6, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 12, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 18, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 24, color = "#999999", size = 0.1) +
   geom_hline(yintercept = 30, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 36, color = "#999999", size = 0.1) +
   geom_col(fill = "lightgray") +
   xlab("Method") +
   ylab("Times Significantly Greater Than Other Methods") +
   geom_text(aes(label = times_sig_and_greater), hjust = -0.1, color = "black") +
-  scale_y_continuous(limits = c(0,30))+
+  scale_y_continuous(limits = c(0,36), breaks = c(0,6,12,18,24,30,36))+
   coord_flip() +
   theme(panel.background = element_rect(fill = "white"), 
         panel.grid.minor = element_blank(), 
@@ -1068,7 +1021,7 @@ l2_prec_at_recall20_naive_overall_right_half <- ((l2_prec_at_recall20_naive_row_
   plot_layout(heights = c(89,11))
 l2_prec_at_recall20_naive_overall_heatmap_fig <- l2_prec_at_recall20_naive_heatmap + l2_prec_at_recall20_naive_overall_right_half +
   plot_layout(ncol = 2)
-ggsave("/Users/kayla/norm_for_RNAseq_coexp/plots/sra_l2_prec_at_recall20_naive_overall_heatmap_fig.png", 
+ggsave("../plots/sra_p20r_naive_heatmap.png", 
        plot = l2_prec_at_recall20_naive_overall_heatmap_fig, width = 18, height = 9)
 ```
 
@@ -1084,11 +1037,7 @@ l2_prec_at_recall20_knowledge_row_labels <- method_codes %>%
   ggplot(aes(x = key, y = factor(method, levels = rev(l2_prec_at_recall20_knowledge_heatmap_order)), fill = value, label = value))+
   geom_tile(color = "white", size = 0.5) +
   #geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values = label_colors) +
   theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -1101,14 +1050,17 @@ l2_prec_at_recall20_knowledge_row_labels <- method_codes %>%
  
 l2_prec_at_recall20_knowledge_bar_plot <- l2_prec_at_recall20_knowledge_method_num_times_sig_greater %>% 
   ggplot(aes(x = factor(method, levels = rev(l2_prec_at_recall20_knowledge_heatmap_order)), y = times_sig_and_greater)) +
-  geom_hline(yintercept = 10, color = "#999999", size = 0.1) +
-  geom_hline(yintercept = 20, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 6, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 12, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 18, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 24, color = "#999999", size = 0.1) +
   geom_hline(yintercept = 30, color = "#999999", size = 0.1) +
+  geom_hline(yintercept = 36, color = "#999999", size = 0.1) +
   geom_col(fill = "lightgray") +
   xlab("Method") +
   ylab("Times Significantly Greater Than Other Methods") +
   geom_text(aes(label = times_sig_and_greater), hjust = -0.1, color = "black") +
-  scale_y_continuous(limits = c(0,30))+
+  scale_y_continuous(limits = c(0,36), breaks = c(0,6,12,18,24,30,36))+
   coord_flip() +
   theme(panel.background = element_rect(fill = "white"), 
         panel.grid.minor = element_blank(), 
@@ -1126,6 +1078,6 @@ l2_prec_at_recall20_knowledge_overall_right_half <- ((l2_prec_at_recall20_knowle
   plot_layout(heights = c(89,11))
 l2_prec_at_recall20_knowledge_overall_heatmap_fig <- l2_prec_at_recall20_knowledge_heatmap + l2_prec_at_recall20_knowledge_overall_right_half +
   plot_layout(ncol = 2)
-ggsave("/Users/kayla/norm_for_RNAseq_coexp/plots/sra_l2_prec_at_recall20_knowledge_overall_heatmap_fig.png", 
+ggsave("../plots/sra_p20r_knowledge_heatmap.png", 
        plot = l2_prec_at_recall20_knowledge_overall_heatmap_fig, width = 18, height = 9)
 ```

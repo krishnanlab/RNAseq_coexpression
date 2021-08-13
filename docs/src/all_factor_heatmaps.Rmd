@@ -13,104 +13,48 @@ library(pheatmap)
 library(ggplotify)
 library(Matrix)
 ```
-# SRA Data
-```{r include=FALSE}
-snr <- read_delim("../data/2020-03-19_sra_naive_results.txt",
-                    delim = "\t", col_names = T)
-snpr <- read_delim("../data/2020-03-19_prec_recall_sra_naive_results.txt",
-                   delim = "\t", col_names = T) %>% 
-  filter(recall == 20)
-skr <- read_delim("../data/2020-03-19_sra_knowledge_results.txt",
-                    delim = "\t", col_names = T)
-skpr <- read_delim("../data/2020-03-19_prec_recall_sra_knowledge_results.txt",
-                   delim = "\t", col_names = T) %>% 
-  filter(recall == 20)
 
-snr$method <- gsub("quantile", "QNT", snr$method)
-snr$method <- gsub("wTO", "WTO", snr$method)
-snpr$method <- gsub("quantile", "QNT", snpr$method)
-snpr$method <- gsub("wTO", "WTO", snpr$method)
-
-skr$method <- gsub("quantile", "QNT", skr$method)
-skr$method <- gsub("wTO", "WTO", skr$method)
-skpr$method <- gsub("quantile", "QNT", skpr$method)
-skpr$method <- gsub("wTO", "WTO", skpr$method)
-
-#remove spinal_cord
-snr <- snr %>% filter(tissue != "spinal_cord")
-skr <- skr %>% filter(tissue != "spinal_cord")
-snpr <- snpr %>% filter(tissue != "spinal_cord")
-skpr <- skpr %>% filter(tissue != "spinal_cord")
-```
-
-# GTEx Data
-```{r include=FALSE}
-gnr <- read_delim("../data/2020-03-19_gtex_naive_results.txt",
-                    delim = "\t", col_names = T)
-gnpr <- read_delim("../data/2020-03-19_prec_recall_gtex_naive_results.txt",
-                   delim = "\t", col_names = T) %>% 
-  filter(recall == 20)
-gkr <- read_delim("../data/2020-03-19_gtex_knowledge_results.txt",
-                    delim = "\t", col_names = T)
-gkpr <- read_delim("../data/2020-03-19_prec_recall_gtex_knowledge_results.txt",
-                   delim = "\t", col_names = T) %>% 
-  filter(recall == 20)
-
-gnr$method <- gsub("quantile", "QNT", gnr$method)
-gnr$method <- gsub("wTO", "WTO", gnr$method)
-gnpr$method <- gsub("quantile", "QNT", gnpr$method)
-gnpr$method <- gsub("wTO", "WTO", gnpr$method)
-
-gkr$method <- gsub("quantile", "QNT", gkr$method)
-gkr$method <- gsub("wTO", "WTO", gkr$method)
-gkpr$method <- gsub("quantile", "QNT", gkpr$method)
-gkpr$method <- gsub("wTO", "WTO", gkpr$method)
-```
-
-# GTEx resampling data
-```{r include=FALSE}
-rnr <- read_delim("../data/2020-03-19_gtex_resampling_naive_results.txt",
-                    delim = "\t", col_names = T)
-rnpr <- read_delim("../data/2020-03-19_prec_recall_gtex_resampling_naive_results.txt",
-                   delim = "\t", col_names = T) %>% 
-  filter(recall == 20)
-rkr <- read_delim("../data/2020-03-19_gtex_resampling_knowledge_results.txt",
-                    delim = "\t", col_names = T)
-rkpr <- read_delim("../data/2020-03-19_prec_recall_gtex_resampling_knowledge_results.txt",
-                   delim = "\t", col_names = T) %>% 
-  filter(recall == 20)
-
-rnr$method <- gsub("quantile", "QNT", rnr$method)
-rnr$method <- gsub("wTO", "WTO", rnr$method)
-rnpr$method <- gsub("quantile", "QNT", rnpr$method)
-rnpr$method <- gsub("wTO", "WTO", rnpr$method)
-
-rkr$method <- gsub("quantile", "QNT", rkr$method)
-rkr$method <- gsub("wTO", "WTO", rkr$method)
-rkpr$method <- gsub("quantile", "QNT", rkpr$method)
-rkpr$method <- gsub("wTO", "WTO", rkpr$method)
-```
-
-# Method Codes
+# Data
 ```{r}
-method_codes <- read_delim("../data/2020-03-19_method_codes.txt",
-                           delim = "\t", col_names = T)
-method_codes$method <- gsub("quantile", "QNT", method_codes$method)
-method_codes$method <- gsub("wTO", "WTO", method_codes$method)
+gnr <- read_delim("../data/final_36_workflows_gtex_naive-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+gkr <- read_delim("../data/final_36_workflows_gtex_knowledge-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+
+snr <- read_delim("../data/final_36_workflows_sra_naive-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+skr <- read_delim("../data/final_36_workflows_sra_knowledge-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+
+rnr <- read_delim("../data/final_36_workflows_gtex-resampling_naive-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+rkr <- read_delim("../data/final_36_workflows_gtex-resampling_knowledge-std_results_auroc_auprc.tsv",
+                  delim = "\t", col_names = T)
+
+method_codes <- read.table("../data/method_codes.tsv", sep = "\t", header = T)
+
+label_colors <- c(" " = "#eff3ff", "CPM" = "#bdd7e7",
+                  "RPKM" = "#6baed6", "TPM" = "#2171b5",
+                  "  " = "#edf8e9", "QNT" = "#c7e9c0",  "TMM" = "#a1d99b",
+                  "UQ" = "#74c476", "CTF" = "#41ab5d",
+                  "CUF" = "#238b45", "   " = "#feedde",
+                  "CLR" = "#fdbe85", "WTO" = "#fd8d3c")
 ```
 
 # Functions
 ```{r include=FALSE}
-#functions to build heatmap
+# Functions to create heatmaps
 get_times_greater_than_matrix <- function(meth_df){
-  #df should be methods_* df (each row is performance on given dataset)
-  counts_output <- matrix(rep(0, 900), nrow = 30, ncol = 30)
+  # meth_df should be methods_* df (each row is performance on given dataset)
+  # meth_df is in alphabetical order
+  n_methods <- ncol(meth_df)
+  counts_output <- matrix(rep(0, (n_methods * n_methods)), nrow = n_methods, ncol = n_methods)
   colnames(counts_output) <- colnames(meth_df)
   rownames(counts_output) <- colnames(meth_df)
   
-  for(num in 1:30){
+  for(num in 1:n_methods){
   a <- pull(meth_df, num)
-  for(val in 1:30){
+  for(val in 1:n_methods){
     if (num == val){
       counts_output[val, num] <- 0.5
       next
@@ -129,14 +73,15 @@ get_significance_matrix <- function(df, performance_col_position, method_col_pos
   sig_output <- pairwise.wilcox.test(x = pull(df, performance_col_position),
                                      g = pull(df, method_col_position),
                                      paired = TRUE,
-                                     p.adjust.method = "BH")$p.value
+                                     p.adjust.method = "BH")
+  sig_output <- sig_output$p.value
   
   #add row/col to make 30 by 30
   CLR <- sig_output[1,]
   CLR[1] <- NA
   sig_output <- rbind(CLR, sig_output)
-  WTO <- sig_output[,29]
-  WTO[30] <- NA
+  WTO <- sig_output[,35]
+  WTO[36] <- NA
   sig_output <- cbind(sig_output, WTO)
   
   #make symmetric
@@ -144,7 +89,8 @@ get_significance_matrix <- function(df, performance_col_position, method_col_pos
   sig_output <- Matrix::forceSymmetric(sig_output, uplo = "L")
   sig_output <- as.matrix(sig_output)
   #replace p vals with sig/not sig
-  sig_wilcox_gtex_naive <- ifelse(sig_output < 0.01, "*", " ")
+  sig_wilcox <- ifelse(sig_output < 0.01, "*", " ")
+  return(sig_wilcox)
 }
 
 get_method_times_sig_greater <- function(times_matrix, sig_matrix){
@@ -154,13 +100,13 @@ get_method_times_sig_greater <- function(times_matrix, sig_matrix){
   times_greater_than_tibble <- as_tibble(times_matrix)
   times_greater_than_tibble$method_one <- colnames(times_matrix)
   times_greater_than_tibble <- times_greater_than_tibble %>% 
-    gather(key = method_two, value = times_method_one_is_greater_than_method_two, 1:30)
+    gather(key = method_two, value = times_method_one_is_greater_than_method_two, 1:36)
   #make sig_matrix into tibble and get times corrected wilcox p value was
   #significant between method_one and method_two
   sig_wilcox_tibble <-  as_tibble(sig_matrix)
   sig_wilcox_tibble$method_one <- colnames(sig_matrix)
   sig_wilcox_tibble <- sig_wilcox_tibble %>%
-    gather(key = method_two, value = significance, 1:30)
+    gather(key = method_two, value = significance, 1:36)
   sig_wilcox_tibble$significance <- ifelse(sig_wilcox_tibble$significance == "*",
                                            T, F)
   
@@ -232,7 +178,7 @@ naive_gr_sample_size_plot_df <- bind_rows(naive_gr_sample_size_plot_df, all_summ
 naive_gr_sample_size_plot_df <- naive_gr_sample_size_plot_df %>% 
   group_by(sample_num) %>% 
   mutate(group_rank = rank(times_sig_and_greater, ties.method = "max"))
-naive_gr_sample_size_plot_df <- naive_gr_sample_size_plot_df %>% mutate(group_rank = (31-group_rank))
+naive_gr_sample_size_plot_df <- naive_gr_sample_size_plot_df %>% mutate(group_rank = (37-group_rank))
 #only show ranks up to 5
 naive_gr_sample_size_plot_df$group_rank <- ifelse(naive_gr_sample_size_plot_df$group_rank > 5,
                                                            " ", naive_gr_sample_size_plot_df$group_rank)
@@ -275,11 +221,7 @@ labels_gtex_naive_sample_size_plot <- method_codes %>%
              fill = value))+
   geom_tile(color = "white", size = 1) +
   geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values = label_colors) +
     theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -343,7 +285,7 @@ knowledge_gr_sample_size_plot_df <- bind_rows(knowledge_gr_sample_size_plot_df, 
 knowledge_gr_sample_size_plot_df <- knowledge_gr_sample_size_plot_df %>% 
   group_by(sample_num) %>% 
   mutate(group_rank = rank(times_sig_and_greater, ties.method = "max"))
-knowledge_gr_sample_size_plot_df <- knowledge_gr_sample_size_plot_df %>% mutate(group_rank = (31-group_rank))
+knowledge_gr_sample_size_plot_df <- knowledge_gr_sample_size_plot_df %>% mutate(group_rank = (37-group_rank))
 #only show ranks up to 5
 knowledge_gr_sample_size_plot_df$group_rank <- ifelse(knowledge_gr_sample_size_plot_df$group_rank > 5,
                                                            " ", knowledge_gr_sample_size_plot_df$group_rank)
@@ -385,11 +327,7 @@ labels_gtex_knowledge_sample_size_plot <- method_codes %>%
              fill = value))+
   geom_tile(color = "white", size = 1) +
   geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values = label_colors) +
     theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -441,7 +379,7 @@ naive_gr_sample_correlation_plot_df <- naive_gr_sample_correlation_plot_df[-1,]
 naive_gr_sample_correlation_plot_df <- naive_gr_sample_correlation_plot_df %>% 
   group_by(median_spearman_group) %>% 
   mutate(group_rank = rank(times_sig_and_greater, ties.method = "max"))
-naive_gr_sample_correlation_plot_df <- naive_gr_sample_correlation_plot_df %>% mutate(group_rank = (31-group_rank))
+naive_gr_sample_correlation_plot_df <- naive_gr_sample_correlation_plot_df %>% mutate(group_rank = (37-group_rank))
 #only show ranks up to 5
 naive_gr_sample_correlation_plot_df$group_rank <- ifelse(naive_gr_sample_correlation_plot_df$group_rank > 5,
                                                            " ", naive_gr_sample_correlation_plot_df$group_rank)
@@ -487,11 +425,7 @@ labels_gtex_naive_sample_correlation_plot <- method_codes %>%
              fill = value))+
   geom_tile(color = "white", size = 1) +
   geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values = label_colors) +
     theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -544,7 +478,7 @@ knowledge_gr_sample_correlation_plot_df <- knowledge_gr_sample_correlation_plot_
 knowledge_gr_sample_correlation_plot_df <- knowledge_gr_sample_correlation_plot_df %>% 
   group_by(median_spearman_group) %>% 
   mutate(group_rank = rank(times_sig_and_greater, ties.method = "max"))
-knowledge_gr_sample_correlation_plot_df <- knowledge_gr_sample_correlation_plot_df %>% mutate(group_rank = (31-group_rank))
+knowledge_gr_sample_correlation_plot_df <- knowledge_gr_sample_correlation_plot_df %>% mutate(group_rank = (37-group_rank))
 #only show ranks up to 5
 knowledge_gr_sample_correlation_plot_df$group_rank <- ifelse(knowledge_gr_sample_correlation_plot_df$group_rank > 5,
                                                            " ", knowledge_gr_sample_correlation_plot_df$group_rank)
@@ -590,11 +524,7 @@ labels_gtex_knowledge_sample_correlation_plot <- method_codes %>%
              fill = value))+
   geom_tile(color = "white", size = 1) +
   geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values = label_colors) +
     theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -649,7 +579,7 @@ naive_gr_sample_sum_st_dev_plot_df <- naive_gr_sample_sum_st_dev_plot_df[-1,]
 naive_gr_sample_sum_st_dev_plot_df <- naive_gr_sample_sum_st_dev_plot_df %>% 
   group_by(count_sum_st_dev_group) %>% 
   mutate(group_rank = rank(times_sig_and_greater, ties.method = "max"))
-naive_gr_sample_sum_st_dev_plot_df <- naive_gr_sample_sum_st_dev_plot_df %>% mutate(group_rank = (31-group_rank))
+naive_gr_sample_sum_st_dev_plot_df <- naive_gr_sample_sum_st_dev_plot_df %>% mutate(group_rank = (37-group_rank))
 #only show ranks up to 5
 naive_gr_sample_sum_st_dev_plot_df$group_rank <- ifelse(naive_gr_sample_sum_st_dev_plot_df$group_rank > 5,
                                                            " ", naive_gr_sample_sum_st_dev_plot_df$group_rank)
@@ -694,11 +624,7 @@ labels_gtex_naive_sample_sum_st_dev_plot <- method_codes %>%
              fill = value))+
   geom_tile(color = "white", size = 1) +
   geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values = label_colors) +
     theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -752,7 +678,7 @@ knowledge_gr_sample_sum_st_dev_plot_df <- knowledge_gr_sample_sum_st_dev_plot_df
 knowledge_gr_sample_sum_st_dev_plot_df <- knowledge_gr_sample_sum_st_dev_plot_df %>% 
   group_by(count_sum_st_dev_group) %>% 
   mutate(group_rank = rank(times_sig_and_greater, ties.method = "max"))
-knowledge_gr_sample_sum_st_dev_plot_df <- knowledge_gr_sample_sum_st_dev_plot_df %>% mutate(group_rank = (31-group_rank))
+knowledge_gr_sample_sum_st_dev_plot_df <- knowledge_gr_sample_sum_st_dev_plot_df %>% mutate(group_rank = (37-group_rank))
 #only show ranks up to 5
 knowledge_gr_sample_sum_st_dev_plot_df$group_rank <- ifelse(knowledge_gr_sample_sum_st_dev_plot_df$group_rank > 5,
                                                            " ", knowledge_gr_sample_sum_st_dev_plot_df$group_rank)
@@ -799,11 +725,7 @@ labels_gtex_knowledge_sample_sum_st_dev_plot <- method_codes %>%
              fill = value))+
   geom_tile(color = "white", size = 1) +
   geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values = label_colors) +
     theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -852,7 +774,7 @@ naive_gr_tissue_plot_df <- naive_gr_tissue_plot_df[-1,]
 naive_gr_tissue_plot_df <- naive_gr_tissue_plot_df %>% 
   group_by(tissue) %>% 
   mutate(group_rank = rank(times_sig_and_greater, ties.method = "max"))
-naive_gr_tissue_plot_df <- naive_gr_tissue_plot_df %>% mutate(group_rank = (31-group_rank))
+naive_gr_tissue_plot_df <- naive_gr_tissue_plot_df %>% mutate(group_rank = (37-group_rank))
 #only show ranks up to 5
 naive_gr_tissue_plot_df$group_rank <- ifelse(naive_gr_tissue_plot_df$group_rank > 5,
                                                            " ", naive_gr_tissue_plot_df$group_rank)
@@ -895,11 +817,7 @@ labels_gtex_naive_tissue_plot <- method_codes %>%
              fill = value))+
   geom_tile(color = "white", size = 1) +
   geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values = label_colors) +
     theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -948,7 +866,7 @@ knowledge_gr_tissue_plot_df <- knowledge_gr_tissue_plot_df[-1,]
 knowledge_gr_tissue_plot_df <- knowledge_gr_tissue_plot_df %>% 
   group_by(tissue) %>% 
   mutate(group_rank = rank(times_sig_and_greater, ties.method = "max"))
-knowledge_gr_tissue_plot_df <- knowledge_gr_tissue_plot_df %>% mutate(group_rank = (31-group_rank))
+knowledge_gr_tissue_plot_df <- knowledge_gr_tissue_plot_df %>% mutate(group_rank = (37-group_rank))
 #only show ranks up to 5
 knowledge_gr_tissue_plot_df$group_rank <- ifelse(knowledge_gr_tissue_plot_df$group_rank > 5,
                                                            " ", knowledge_gr_tissue_plot_df$group_rank)
@@ -991,11 +909,7 @@ labels_gtex_knowledge_tissue_plot <- method_codes %>%
              fill = value))+
   geom_tile(color = "white", size = 1) +
   geom_text(aes(label = value)) +
-  scale_fill_manual(values = c(" " = "#eff3ff", "CPM" = "#bdd7e7",
-                    "RPKM" = "#6baed6", "TPM" = "#2171b5",
-                    "  " = "#edf8e9", "QNT" = "#bae4b3",  "TMM" = "#74c476",
-                    "UQ" = "#238b45", "   " = "#feedde",
-                    "CLR" = "#fdbe85", "WTO" = "#fd8d3c")) +
+  scale_fill_manual(values = label_colors) +
     theme(panel.background = element_blank(),
         panel.grid.major = element_blank(),
         panel.grid.minor = element_blank(),
@@ -1014,4 +928,16 @@ tissue_fig_knowledge <- labels_gtex_knowledge_tissue_plot + full_tissue_gtex_kno
 ```{r}
 # ggsave tissue plots are width = 12, height = 8
 ```
+
+```{r}
+ggsave("../plots/gr_sample_size_naive_heatmap.png", plot = sample_size_fig_naive, height = 8, width = 12)
+ggsave("../plots/gr_sample_size_knowledge_heatmap.png", plot = sample_size_fig_knowledge, height = 8, width = 12)
+ggsave("../plots/gr_sample_sim_naive_heatmap.png", plot = sample_correlation_fig_naive, height = 8, width = 12)
+ggsave("../plots/gr_sample_sim_knowledge_heatmap.png", plot = sample_correlation_fig_knowledge, height = 8, width = 12)
+ggsave("../plots/gr_counts_div_naive_heatmap.png", plot = sample_sum_st_dev_fig_naive, height = 8, width = 12)
+ggsave("../plots/gr_counts_div_knowledge_heatmap.png", plot = sample_sum_st_dev_fig_knowledge, height = 8, width = 12)
+ggsave("../plots/gr_tissue_naive_heatmap.png", plot = tissue_fig_naive, height = 8, width = 12)
+ggsave("../plots/gr_tissue_knowledge_heatmap.png", plot = tissue_fig_knowledge, height = 8, width = 12)
+```
+
 
