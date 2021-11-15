@@ -2,10 +2,10 @@ tic <- as.integer(as.POSIXct(Sys.time()))
 library(tidyverse)
 library(edgeR)
 args <- commandArgs(TRUE)
-#args[1] is directory of files to TMM normalize
+#args[1] is directory of files to UQ normalize
 
-##TMM function
-get_tmm <- function(tis_gene_count) {
+##uq function
+get_uq <- function(tis_gene_count) {
   sweep(tis_gene_count, 2, c((colSums(tis_gene_count)*norm_factors)/(10**6)), "/") %>%
     apply(., 2, round, digits = 5) %>%
     as.data.frame()
@@ -13,7 +13,7 @@ get_tmm <- function(tis_gene_count) {
 
 directory <- args[1]
 #create output dir
-output_dir <- paste0("./", directory, "_TMM_normalized")
+output_dir <- paste0("./", directory, "_upper-quartile_normalized")
 if(!dir.exists(output_dir)) {
   dir.create(output_dir)
 }
@@ -33,15 +33,15 @@ for (filename in dir_files){
   file_basename <- basename(filename)
   #library size = col sums of matrix
   lib_size <- base::colSums(count_data)
-  #TMM normalization factors
-  norm_factors <- calcNormFactors(object = count_data, lib.size = lib_size, method = "TMM")
+  #upper quartile normalization factors
+  norm_factors <- calcNormFactors(object = count_data, lib.size = lib_size, method = "upperquartile")
   #normalize with norm factors here
-  TMM_normalized <- get_tmm(count_data)
+  uq_normalized <- get_uq(count_data)
   #write file
-  TMM_normalized %>% 
+  uq_normalized %>% 
     as.data.frame() %>% 
     rownames_to_column("gene") %>% 
-    write_delim(paste0(output_dir, "/", gsub("\\.pcl$", "_TMM_norm.pcl", file_basename)),
+    write_delim(paste0(output_dir, "/", gsub("\\.pcl$", "_u-q_norm.pcl", file_basename)),
                 delim = "\t",
                 col_names = T)
 }
@@ -49,3 +49,4 @@ for (filename in dir_files){
 #script time
 toc <- as.integer(as.POSIXct(Sys.time()))
 print(paste("The time it took to run this script in minutes was", (toc-tic)/60, sep = " "))
+
