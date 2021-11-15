@@ -78,7 +78,7 @@ $ Rscript gene_filtering_by_cpm.R path/directory_to_be_gene_filtered path/genes_
 If no within-sample normalization is desired, continue the pipeline with the `counts` directory that has been through any necessary sample selection and gene filtering. Choosing CPM, RPKM, or TPM requires the use of the `cpm`, `rpkm`, or `tpm` directories that have been sample and/or gene filtered as necessary.
 
 ## 5. Between-sample normalization
-The options are `none`, `TMM`, `upper quartile`, or `quantile` normalization. If no between-sample normalization is desired, skip this step. 
+The options are `none`, `TMM`, `upper quartile`, `CTF`, `CUF`, or `quantile` normalization. If no between-sample normalization is desired, skip this step. 
 
 ### TMM normalization
 TMM normalization requires count data and should not be paired with CPM, RPKM, or TPM.
@@ -118,6 +118,46 @@ Path to directory of datasets to be upper quartile normalized.
 __Use from command line__:  
 ```bash
 $ Rscript upper_quartile_normalize.R path/directory_to_be_normalized
+```
+
+### CTF normalization
+CTF requires count data and should not be paired with CPM, RPKM, or TPM.
+
+__Script__:  
+`CTF_normalize.R`
+
+__Required R packages__:  
+[tidyverse](https://www.tidyverse.org/), [edgeR](https://bioconductor.org/packages/release/bioc/html/edgeR.html)
+
+__Purpose__:  
+CTF normalize each dataset in a directory.
+
+__Arguments__:  
+Path to directory of datasets to be CTF normalized.
+
+__Use from command line__:  
+```bash
+$ Rscript CTF_normalize.R path/directory_to_be_normalized
+```
+
+### CUF normalization
+CUF requires count data and should not be paired with CPM, RPKM, or TPM.
+
+__Script__:  
+`CUF_normalize.R`
+
+__Required R packages__:  
+[tidyverse](https://www.tidyverse.org/), [edgeR](https://bioconductor.org/packages/release/bioc/html/edgeR.html)
+
+__Purpose__:  
+CTF normalize each dataset in a directory.
+
+__Arguments__:  
+Path to directory of datasets to be CUF normalized.
+
+__Use from command line__:  
+```bash
+$ Rscript CUF_normalize.R path/directory_to_be_normalized
 ```
 
 ### Quantile normalization
