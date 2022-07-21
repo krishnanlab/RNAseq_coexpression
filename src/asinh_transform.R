@@ -22,7 +22,7 @@ for (file_name in file_list){
     column_to_rownames("gene") %>% 
     as.data.frame()
   #get basename for writing file
-  base_filename <- basename(file_name)
+  file_basename <- basename(file_name)
   asinh(gene_data) %>% 
     rownames_to_column("gene") %>%
     write_delim(paste0(dirname, "/", gsub("\\.pcl$", "_gene-type_filtered.pcl", file_basename)), 
