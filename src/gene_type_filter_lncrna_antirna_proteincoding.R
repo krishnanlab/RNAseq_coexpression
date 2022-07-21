@@ -5,7 +5,7 @@ args <- commandArgs(TRUE)
 #args[1] is path to directory needing filtering (also helps name new dir)
 
 #read in ensembl gene ids (1st col) and type of gene (2nd col) 
-gene_info <- read_delim("../data/ensembl-id_gene-type_mygeneinfo.txt",
+gene_info <- read_delim("../data/ensembl-id_gene-type_mygeneinfo.tsv",
                         delim = "\t",
                         col_names = T)
 #filter for types of genes we want
