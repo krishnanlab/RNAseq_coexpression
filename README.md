@@ -1,5 +1,5 @@
 # RNAseq_coexpression
-This GitHub repository contains all the code for reproducing the results from our manuscript "**Robust normalization and transformation techniques for constructing gene coexpression networks from RNA-seq data**", which can be found [here](https://doi.org/10.1101/2020.09.22.308577).
+This GitHub repository contains all the code for reproducing the results from our manuscript "**Robust normalization and transformation techniques for constructing gene coexpression networks from RNA-seq data**", which can be found [here](https://genomebiology.biomedcentral.com/articles/10.1186/s13059-021-02568-9/).
 
 The website containing extra results and figures from our analysis can be found [here](https://krishnanlab.github.io/RNAseq_coexpression/index.html).  
 
